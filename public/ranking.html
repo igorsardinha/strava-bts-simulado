@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Ranking do Clube Strava</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+		<style>
+			#logo {
+				border-radius: 50%;
+				width: 150px;
+				height: 150px;
+				margin-right: 15px;
+				border: 1px solid #ccc;
+			}
+			body {
+				font-family: sans-serif;
+				text-align: center;
+				margin-top: 50px;
+			}
+			.btn {
+				color: white;
+				padding: 15px 30px;
+				text-decoration: none;
+				border-radius: 5px;
+				font-size: 1.2em;
+				border: none;
+				cursor: pointer;
+				display: inline-block;
+				margin-top: 10px;
+			}
+			.btn-strava {
+				background-color: #fc4c02;
+			}
+			.ranking-nav {
+				margin: 20px 0;
+			}
+			.ranking-nav .btn {
+				margin: 0 5px;
+			}
+			.leaderboard-container {
+				text-align: left;
+				margin: 20px auto;
+				max-width: 1000px;
+			}
+			.leaderboard-container h3 {
+				border-bottom: 2px solid #ccc;
+				padding-bottom: 5px;
+			}
+			.tabs-container {
+				display: flex;
+				justify-content: center;
+				margin: 20px 0;
+				background-color: #f2f2f2;
+				border-radius: 10px;
+				overflow: hidden;
+			}
+			.tab-btn {
+				padding: 15px 25px;
+				border: none;
+				background-color: transparent;
+				color: #333;
+				font-size: 1.2em;
+				cursor: pointer;
+				transition: background-color 0.3s;
+			}
+			.tab-btn:hover {
+				background-color: #e0e0e0;
+			}
+			.tab-btn.active {
+				background-color: #fc4c02;
+				color: white;
+			}
+			.leaderboard-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-end;
+				position: relative;
+			}
+			.print-btn,
+			.refresh-btn {
+				padding: 8px 15px;
+				font-size: 0.9em;
+				border-radius: 5px;
+				color: white;
+				border: none;
+				cursor: pointer;
+				display: inline-block;
+			}
+			.print-btn {
+				background-color: #4caf50;
+			}
+			.refresh-btn {
+				background-color: #2196f3;
+			}
+			.leaderboard-header-buttons {
+				position: absolute;
+				top: 0;
+				right: 0;
+				display: flex;
+				gap: 10px;
+			}
+			.leaderboard-table {
+				width: 100%;
+				border-collapse: collapse;
+				border-radius: 10px;
+				overflow: hidden;
+			}
+			.leaderboard-table th,
+			.leaderboard-table td {
+				padding: 12px;
+				text-align: center;
+				border: none;
+			}
+			.leaderboard-table tbody tr {
+				border-bottom: 1px solid #ddd;
+				cursor: pointer;
+			}
+			.leaderboard-table tbody tr.details-row {
+				cursor: default;
+				background-color: #f2f2f2;
+			}
+			.leaderboard-table th {
+				background-color: #f2f2f2;
+				cursor: pointer;
+				position: relative;
+			}
+			.leaderboard-table img {
+				width: 40px;
+				height: 40px;
+				border-radius: 50%;
+				margin-right: 10px;
+			}
+			.leaderboard-table tbody tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+			.leaderboard-table .athlete-cell {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			.athlete-cell-content {
+				display: flex;
+				align-items: center;
+			}
+			.first-place {
+				background-color: #ffd70033 !important;
+			}
+			.second-place {
+				background-color: #c0c0c033 !important;
+			}
+			.third-place {
+				background-color: #cd7f3233 !important;
+			}
+			.detailed-times {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 10px;
+				padding: 10px;
+				text-align: left;
+			}
+			.detailed-times .sport-details {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 8px;
+			}
+			.detailed-times .sport-details strong {
+				margin-bottom: 5px;
+			}
+			.detailed-times .sport-details p {
+				margin: 2px 0;
+			}
+			.transition-details {
+				text-align: center;
+				margin-top: 10px;
+				grid-column: 1 / -1; /* Ocupa todas as 3 colunas */
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 8px;
+				background-color: #fff;
+			}
+
+			/* Estilos do Modal de Relatório */
+			.report-modal {
+				display: none;
+				position: fixed;
+				z-index: 1000;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				overflow: auto;
+				background-color: rgba(0, 0, 0, 0.4);
+				padding-top: 60px;
+			}
+			.report-modal-content {
+				background-color: #fefefe;
+				margin: 5% auto;
+				padding: 20px;
+				border: 1px solid #888;
+				width: 90%;
+				max-width: 1200px;
+				border-radius: 10px;
+				position: relative;
+			}
+			.report-table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			.report-table th,
+			.report-table td {
+				border: 1px solid #ccc;
+				padding: 8px;
+				text-align: center;
+			}
+			.report-table th {
+				background-color: #e0e0e0;
+			}
+			.report-close-btn {
+				color: #aaa;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+			.report-close-btn:hover,
+			.report-close-btn:focus {
+				color: black;
+				text-decoration: none;
+			}
+		</style>
+	</head>
+	<body>
+		<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+		<h1>2ª Etapa - Simulado BTS</h1>
+		<div class="leaderboard-container">
+			<div class="tabs-container">
+				<button class="tab-btn active" id="combinedRankingBtn">
+					Ranking Geral
+				</button>
+				<button class="tab-btn" id="cyclingRankingBtn">Ciclismo 🚲</button>
+				<button class="tab-btn" id="runningRankingBtn">Corrida 🏃‍♂️</button>
+				<button class="tab-btn" id="swimmingRankingBtn">Natação 🏊‍♀️</button>
+			</div>
+
+			<div class="leaderboard-header">
+				<h3 id="rankingTitle">Ranking Geral (Tempo Total)</h3>
+				<div class="leaderboard-header-buttons">
+					<button class="print-btn" id="printReportBtn">
+						<i class="fa-solid fa-print"></i>
+					</button>
+					<button class="refresh-btn" id="refreshBtn">
+						<i class="fa-solid fa-arrows-rotate"></i>
+					</button>
+				</div>
+			</div>
+			<p
+				id="rankingDateInfo"
+				style="text-align: center; font-style: italic"></p>
+
+			<table class="leaderboard-table">
+				<thead>
+					<tr>
+						<th>Posição</th>
+						<th style="text-align: center">Atleta</th>
+						<th>Tempo Total</th>
+					</tr>
+				</thead>
+				<tbody id="leaderboard-body"></tbody>
+			</table>
+		</div>
+
+		<div id="reportModal" class="report-modal">
+			<div class="report-modal-content">
+				<div
+					style="
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+					">
+					<h3>Relatório de Ranking</h3>
+					<div>
+						<button class="btn print-btn" id="exportToExcelBtn">
+							<i class="fa-solid fa-file-excel"></i>
+						</button>
+						<span class="report-close-btn" id="closeReportBtn">&times;</span>
+					</div>
+				</div>
+				<p id="reportDateInfo" style="font-style: italic"></p>
+				<table class="report-table">
+					<thead>
+						<tr>
+							<th>Posição</th>
+							<th>Atleta</th>
+							<th>Hora Início</th>
+							<th>Tempo Total</th>
+							<th>Total Natação</th>
+							<th>Total Ciclismo</th>
+							<th>Total Corrida</th>
+						</tr>
+					</thead>
+					<tbody id="reportTableBody"></tbody>
+				</table>
+			</div>
+		</div>
+		<a href="/" class="btn btn-strava">Voltar para a Página Principal</a>
+
+		<script>
+			const leaderboardBody = document.getElementById("leaderboard-body");
+			const rankingTitle = document.getElementById("rankingTitle");
+			const combinedRankingBtn = document.getElementById("combinedRankingBtn");
+			const cyclingRankingBtn = document.getElementById("cyclingRankingBtn");
+			const runningRankingBtn = document.getElementById("runningRankingBtn");
+			const swimmingRankingBtn = document.getElementById("swimmingRankingBtn");
+			const refreshBtn = document.getElementById("refreshBtn");
+			const rankingDateInfo = document.getElementById("rankingDateInfo");
+			const printReportBtn = document.getElementById("printReportBtn");
+			const reportModal = document.getElementById("reportModal");
+			const reportTableBody = document.getElementById("reportTableBody");
+			const closeReportBtn = document.getElementById("closeReportBtn");
+			const exportToExcelBtn = document.getElementById("exportToExcelBtn");
+
+			let allRankings = {};
+			let currentRankingType = "combined";
+
+			const formatTime = (seconds) => {
+				if (seconds === 0) return "00:00:00";
+				if (seconds === null) return "N/A";
+				const h = Math.floor(seconds / 3600)
+					.toString()
+					.padStart(2, "0");
+				const m = Math.floor((seconds % 3600) / 60)
+					.toString()
+					.padStart(2, "0");
+				const s = (seconds % 60).toString().padStart(2, "0");
+				return `${h}:${m}:${s}`;
+			};
+
+			const formatPace = (distance, time) => {
+				if (distance === 0 || time === 0) return "N/A";
+				const paceInSecondsPerKm = (time * 1000) / distance;
+				const minutes = Math.floor(paceInSecondsPerKm / 60);
+				const seconds = Math.floor(paceInSecondsPerKm % 60);
+				return `${minutes}m ${seconds}s /km`;
+			};
+
+			const formatPaceNatacao = (distance, time) => {
+				if (distance === 0 || time === 0) return "N/A";
+				const paceInSecondsPerKm = (time * 100) / distance;
+				const minutes = Math.floor(paceInSecondsPerKm / 60);
+				const seconds = Math.floor(paceInSecondsPerKm % 60);
+				return `${minutes}m ${seconds}s /100m`;
+			};
+
+			const formatSpeed = (distance, time) => {
+				if (distance === 0 || time === 0) return "N/A";
+				const speedInMetersPerSecond = distance / time;
+				const speedInKmPerHour = speedInMetersPerSecond * 3.6;
+				return `${speedInKmPerHour.toFixed(2)} km/h`;
+			};
+
+			const getPositionEmoji = (position) => {
+				switch (position) {
+					case 1:
+						return "🥇";
+					case 2:
+						return "🥈";
+					case 3:
+						return "🥉";
+					default:
+						return position;
+				}
+			};
+
+			const setActiveTab = (buttonId) => {
+				document
+					.querySelectorAll(".tab-btn")
+					.forEach((btn) => btn.classList.remove("active"));
+				document.getElementById(buttonId).classList.add("active");
+			};
+
+			const toggleDetailsRow = (row, user) => {
+				if (
+					row.nextElementSibling &&
+					row.nextElementSibling.classList.contains("details-row")
+				) {
+					row.nextElementSibling.remove();
+				} else {
+					const detailsRow = leaderboardBody.insertRow(row.rowIndex);
+					detailsRow.classList.add("details-row");
+					const detailsCell = detailsRow.insertCell(0);
+					detailsCell.colSpan = 3;
+
+					detailsCell.innerHTML = `
+          <div class="detailed-times">
+            <div class="sport-details">
+              <strong>🚲 Ciclismo</strong>
+              <p>Tempo: ${formatTime(user.total_ride_time)}</p>
+              <p>Pace: ${formatPace(
+								user.total_ride_distance,
+								user.total_ride_time
+							)}</p>
+              <p>Vel. Média: ${formatSpeed(
+								user.total_ride_distance,
+								user.total_ride_time
+							)}</p>
+            </div>
+            <div class="sport-details">
+              <strong>🏃‍♂️ Corrida</strong>
+              <p>Tempo: ${formatTime(user.total_run_time)}</p>
+              <p>Pace: ${formatPace(
+								user.total_run_distance,
+								user.total_run_time
+							)}</p>
+              <p>Vel. Média: ${formatSpeed(
+								user.total_run_distance,
+								user.total_run_time
+							)}</p>
+            </div>
+            <div class="sport-details">
+              <strong>🏊‍♀️ Natação</strong>
+              <p>Tempo: ${formatTime(user.total_swim_time)}</p>
+              <p>Pace: ${formatPaceNatacao(
+								user.total_swim_distance,
+								user.total_swim_time
+							)}</p>
+              <p>Vel. Média: ${formatSpeed(
+								user.total_swim_distance,
+								user.total_swim_time
+							)}</p>
+            </div>
+          </div>
+          <div class="transition-details">
+              <strong>➡️ Transição:</strong> ${formatTime(
+								user.total_transition_time || 0
+							)}
+          </div>
+        `;
+				}
+			};
+
+			const renderLeaderboard = (rankingType) => {
+				currentRankingType = rankingType;
+				leaderboardBody.innerHTML = "";
+				let rankingData = [];
+				let title = "";
+				let tableHeaderHTML = "";
+
+				switch (rankingType) {
+					case "cycling":
+						rankingData = allRankings.cycling;
+						title = "Ranking de Ciclismo 🚲";
+						tableHeaderHTML = `<th>Posição</th><th style="text-align: center;">Atleta</th><th>Tempo de Ciclismo</th>`;
+						setActiveTab("cyclingRankingBtn");
+						break;
+					case "running":
+						rankingData = allRankings.running;
+						title = "Ranking de Corrida 🏃‍♂️";
+						tableHeaderHTML = `<th>Posição</th><th style="text-align: center;">Atleta</th><th>Tempo de Corrida</th>`;
+						setActiveTab("runningRankingBtn");
+						break;
+					case "swimming":
+						rankingData = allRankings.swimming;
+						title = "Ranking de Natação 🏊‍♀️";
+						tableHeaderHTML = `<th>Posição</th><th style="text-align: center;">Atleta</th><th>Tempo de Natação</th>`;
+						setActiveTab("swimmingRankingBtn");
+						break;
+					case "combined":
+					default:
+						rankingData = allRankings.combined;
+						title = "Ranking Geral (Tempo Total)";
+						tableHeaderHTML = `<th>Posição</th><th style="text-align: center;">Atleta</th><th>Tempo Total</th>`;
+						setActiveTab("combinedRankingBtn");
+						break;
+				}
+
+				rankingTitle.textContent = title;
+				document.querySelector(".leaderboard-table thead tr").innerHTML =
+					tableHeaderHTML;
+
+				if (!rankingData || rankingData.length === 0) {
+					leaderboardBody.innerHTML = `<tr><td colspan="3">Nenhum dado de ranking disponível.</td></tr>`;
+					return;
+				}
+
+				rankingData.forEach((user, index) => {
+					const row = leaderboardBody.insertRow();
+					const position = index + 1;
+					let rankClass = "";
+					if (rankingType === "combined" && position === 1)
+						rankClass = "first-place";
+					else if (rankingType === "combined" && position === 2)
+						rankClass = "second-place";
+					else if (rankingType === "combined" && position === 3)
+						rankClass = "third-place";
+
+					if (rankClass) {
+						row.classList.add(rankClass);
+					}
+
+					let timeToShow;
+					if (rankingType === "combined") timeToShow = user.total_combined_time;
+					else if (rankingType === "cycling") timeToShow = user.total_ride_time;
+					else if (rankingType === "running") timeToShow = user.total_run_time;
+					else if (rankingType === "swimming")
+						timeToShow = user.total_swim_time;
+
+					row.innerHTML = `
+            <td>${getPositionEmoji(position)}</td>
+            <td class="athlete-cell">
+                <img src="${
+									user.profile_photo || "https://via.placeholder.com/40"
+								}" alt="Foto">
+                <span>${user.name}</span>
+            </td>
+            <td>${formatTime(timeToShow)}</td>
+        `;
+
+					if (rankingType === "combined") {
+						row.addEventListener("click", () => toggleDetailsRow(row, user));
+					} else {
+						row.style.cursor = "default";
+					}
+				});
+			};
+
+			const fetchLeaderboard = async () => {
+				try {
+					const response = await fetch("/api/strava/leaderboard");
+					allRankings = await response.json();
+					if (allRankings.config) {
+						const date = new Date(
+							allRankings.config + "T00:00:00-03:00"
+						).toLocaleDateString();
+						rankingDateInfo.textContent = `Ranking configurado para o dia: ${date}`;
+					} else {
+						rankingDateInfo.textContent = "";
+					}
+					renderLeaderboard("combined");
+				} catch (error) {
+					console.error("Erro ao buscar o ranking:", error);
+					rankingDateInfo.textContent = "";
+					leaderboardBody.innerHTML =
+						'<tr><td colspan="3">Erro ao carregar o ranking.</td></tr>';
+				}
+			};
+
+			const refreshLeaderboard = async () => {
+				refreshBtn.disabled = true;
+				refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+				try {
+					await fetch("/api/strava/update-all-activities");
+					await fetchLeaderboard();
+				} catch (error) {
+					console.error("Erro ao atualizar o ranking:", error);
+					alert(
+						"Erro ao atualizar o ranking. Verifique o console para mais detalhes."
+					);
+				} finally {
+					refreshBtn.disabled = false;
+					refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+				}
+			};
+
+			const showReportModal = () => {
+				const reportData = allRankings.combined;
+				reportTableBody.innerHTML = "";
+				const reportDate = rankingDateInfo.textContent;
+				document.getElementById("reportDateInfo").textContent = reportDate;
+
+				if (!reportData || reportData.length === 0) {
+					reportTableBody.innerHTML = `<tr><td colspan="7">Nenhum dado disponível para o relatório.</td></tr>`;
+				} else {
+					reportData.forEach((user, index) => {
+						const row = reportTableBody.insertRow();
+						row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.start_time}</td>
+                    <td>${formatTime(user.total_combined_time)}</td>
+                    <td>${formatTime(user.total_swim_time)}</td>
+                    <td>${formatTime(user.total_ride_time)}</td>
+                    <td>${formatTime(user.total_run_time)}</td>
+                `;
+					});
+				}
+
+				reportModal.style.display = "block";
+			};
+
+			const exportTableToExcel = () => {
+				const table = document.querySelector("#reportModal .report-table");
+				let csv = [];
+				let rows = table.querySelectorAll("tr");
+				for (let i = 0; i < rows.length; i++) {
+					let row = [],
+						cols = rows[i].querySelectorAll("td, th");
+					for (let j = 0; j < cols.length; j++) {
+						let text = cols[j].innerText.trim().replace(/"/g, '""');
+						row.push(`"${text}"`);
+					}
+					csv.push(row.join(";"));
+				}
+
+				const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+				const encodedUri = encodeURI(csvContent);
+				const link = document.createElement("a");
+				link.setAttribute("href", encodedUri);
+				link.setAttribute("download", "relatorio_ranking.csv");
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			};
+
+			combinedRankingBtn.addEventListener("click", () =>
+				renderLeaderboard("combined")
+			);
+			cyclingRankingBtn.addEventListener("click", () =>
+				renderLeaderboard("cycling")
+			);
+			runningRankingBtn.addEventListener("click", () =>
+				renderLeaderboard("running")
+			);
+			swimmingRankingBtn.addEventListener("click", () =>
+				renderLeaderboard("swimming")
+			);
+			refreshBtn.addEventListener("click", refreshLeaderboard);
+			printReportBtn.addEventListener("click", showReportModal);
+			closeReportBtn.addEventListener("click", () => {
+				reportModal.style.display = "none";
+			});
+			exportToExcelBtn.addEventListener("click", exportTableToExcel);
+
+			fetchLeaderboard();
+		</script>
+	</body>
+</html>

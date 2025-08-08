@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Painel de Administração</title>
+		<style>
+			#logo {
+				border-radius: 50%;
+				width: 150px;
+				height: 150px;
+				margin-right: 15px;
+				border: 1px solid #ccc;
+			}
+			body {
+				font-family: sans-serif;
+				margin: 20px;
+				text-align: center;
+			}
+			.container {
+				max-width: 1000px;
+				margin: 0 auto;
+			}
+			.btn {
+				color: white;
+				padding: 10px 20px;
+				text-decoration: none;
+				border-radius: 5px;
+				font-size: 1em;
+				border: none;
+				cursor: pointer;
+				display: inline-block;
+				margin-top: 10px;
+			}
+			.btn-strava {
+				background-color: #fc4c02;
+			}
+			h1 {
+				text-align: center;
+			}
+			.controls,
+			.config-section {
+				background-color: #f2f2f2;
+				padding: 20px;
+				border-radius: 10px;
+				margin-bottom: 20px;
+				text-align: left;
+			}
+			.controls label,
+			.controls input,
+			.controls select,
+			.config-section label,
+			.config-section input {
+				margin-right: 15px;
+				margin-bottom: 10px;
+			}
+			.activity-list {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 20px;
+			}
+			.activity-list th,
+			.activity-list td {
+				border: 1px solid #ccc;
+				padding: 10px;
+				text-align: left;
+			}
+			.activity-list th {
+				background-color: #e0e0e0;
+			}
+			.delete-btn {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 5px 10px;
+				cursor: pointer;
+				border-radius: 3px;
+			}
+			.edit-btn {
+				background-color: #4caf50;
+				color: white;
+				border: none;
+				padding: 5px 10px;
+				cursor: pointer;
+				border-radius: 3px;
+				margin-right: 5px;
+			}
+			.remove-filter-btn {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 5px 10px;
+				cursor: pointer;
+				border-radius: 3px;
+				margin-left: 10px;
+			}
+			.delete-all-btn {
+				background-color: #dc3545;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				cursor: pointer;
+				border-radius: 5px;
+				margin-top: 20px;
+			}
+
+			/* Estilos do formulário de login */
+			.login-form {
+				max-width: 400px;
+				margin: 50px auto;
+				padding: 20px;
+				border: 1px solid #ccc;
+				border-radius: 10px;
+				text-align: center;
+			}
+			.login-form input {
+				width: 100%;
+				padding: 10px;
+				margin-bottom: 10px;
+				box-sizing: border-box;
+			}
+			.login-form .btn {
+				width: 100%;
+			}
+			.logout-btn {
+				background-color: #f44336;
+			}
+
+			/* Estilos do modal */
+			.modal {
+				position: fixed;
+				z-index: 1;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.4);
+				display: none;
+			}
+			.modal-content {
+				background-color: #fefefe;
+				margin: 15% auto;
+				padding: 20px;
+				border: 1px solid #888;
+				width: 80%;
+				max-width: 500px;
+				border-radius: 10px;
+				text-align: left;
+			}
+			.modal-content label,
+			.modal-content input {
+				display: block;
+				width: 100%;
+				margin-bottom: 10px;
+				box-sizing: border-box;
+			}
+			.modal-buttons {
+				text-align: right;
+				margin-top: 20px;
+			}
+			.modal-buttons .btn {
+				margin-left: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+		<h1>2ª Etapa - Simulado BTS</h1>
+		<div class="container">
+			<h2>Painel de Administração</h2>
+			<div id="login-section" class="login-form">
+				<h3>Login de Administrador</h3>
+				<form id="loginForm">
+					<input type="text" id="username" placeholder="Usuário" required />
+					<input type="password" id="password" placeholder="Senha" required />
+					<button type="submit" class="btn btn-strava">Entrar</button>
+					<p id="loginMessage" style="color: red"></p>
+				</form>
+			</div>
+
+			<div id="admin-panel" style="display: none">
+				<div class="config-section">
+					<h2>Configurar Ranking</h2>
+					<label for="rankingDateInput"
+						>Filtrar Ranking por Dia Específico:</label
+					>
+					<input type="date" id="rankingDateInput" />
+					<button id="saveRankingConfigBtn" class="btn btn-strava">
+						Salvar Configuração
+					</button>
+					<button id="removeRankingFilterBtn" class="remove-filter-btn">
+						Remover Filtro
+					</button>
+					<div class="form-group" style="margin-top: 15px">
+						<input type="checkbox" id="considerTransition" />
+						<label for="considerTransition" style="display: inline"
+							>Considerar tempo de transição no ranking?</label
+						>
+					</div>
+				</div>
+
+				<div class="controls">
+					<h2>Filtrar Atividades</h2>
+					<label for="athleteSelect">Atleta:</label>
+					<select id="athleteSelect">
+						<option value="">Todos os Atletas</option>
+					</select>
+
+					<label for="dateInput">Data:</label>
+					<input type="date" id="dateInput" />
+
+					<label for="limitInput">Limite:</label>
+					<input type="number" id="limitInput" value="20" min="1" />
+
+					<button id="filterBtn" class="btn btn-strava">Filtrar</button>
+				</div>
+
+				<button id="deleteAllActivitiesBtn" class="btn delete-all-btn">
+					Excluir Todas as Atividades
+				</button>
+
+				<div id="results">
+					<h2>Resultados</h2>
+					<table class="activity-list">
+						<thead>
+							<tr>
+								<th>Atleta</th>
+								<th>Nome</th>
+								<th>Tipo</th>
+								<th>Data</th>
+								<th>Distância</th>
+								<th>Tempo</th>
+								<th>Ação</th>
+							</tr>
+						</thead>
+						<tbody id="activityTableBody"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div id="editModal" class="modal">
+			<div class="modal-content">
+				<h3>Editar Atividade <span id="modalActivityId"></span></h3>
+				<form id="editForm">
+					<input type="hidden" id="editActivityId" />
+					<label for="editName">Nome da Atividade:</label>
+					<input type="text" id="editName" required />
+
+					<label for="editDistance">Distância (em metros):</label>
+					<input type="number" id="editDistance" step="0.01" required />
+
+					<label for="editTime">Tempo (em segundos):</label>
+					<input type="number" id="editTime" required />
+
+					<div class="modal-buttons">
+						<button type="button" class="btn btn-strava" id="cancelEdit">
+							Cancelar
+						</button>
+						<button type="submit" class="btn btn-strava">Salvar</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<button id="logoutBtn" class="btn logout-btn">Sair</button>
+
+		<script>
+			const loginSection = document.getElementById("login-section");
+			const loginForm = document.getElementById("loginForm");
+			const usernameInput = document.getElementById("username");
+			const passwordInput = document.getElementById("password");
+			const loginMessage = document.getElementById("loginMessage");
+			const adminPanel = document.getElementById("admin-panel");
+			const logoutBtn = document.getElementById("logoutBtn");
+			const athleteSelect = document.getElementById("athleteSelect");
+			const dateInput = document.getElementById("dateInput");
+			const limitInput = document.getElementById("limitInput");
+			const filterBtn = document.getElementById("filterBtn");
+			const activityTableBody = document.getElementById("activityTableBody");
+			const editModal = document.getElementById("editModal");
+			const editForm = document.getElementById("editForm");
+			const cancelEditBtn = document.getElementById("cancelEdit");
+			const rankingDateInput = document.getElementById("rankingDateInput");
+			const saveRankingConfigBtn = document.getElementById(
+				"saveRankingConfigBtn"
+			);
+			const removeRankingFilterBtn = document.getElementById(
+				"removeRankingFilterBtn"
+			);
+			const deleteAllActivitiesBtn = document.getElementById(
+				"deleteAllActivitiesBtn"
+			);
+			const considerTransitionCheckbox =
+				document.getElementById("considerTransition");
+
+			const formatTime = (seconds) => {
+				if (seconds === 0) return "00:00:00";
+				const h = Math.floor(seconds / 3600)
+					.toString()
+					.padStart(2, "0");
+				const m = Math.floor((seconds % 3600) / 60)
+					.toString()
+					.padStart(2, "0");
+				const s = (seconds % 60).toString().padStart(2, "0");
+				return `${h}:${m}:${s}`;
+			};
+
+			const checkLoginStatus = async () => {
+				try {
+					const response = await fetch("/api/admin/status");
+					const data = await response.json();
+					if (data.status === "authenticated") {
+						loginSection.style.display = "none";
+						adminPanel.style.display = "block";
+						loadRankingConfig();
+						fetchUsers();
+						fetchActivities();
+					} else {
+						loginSection.style.display = "block";
+						adminPanel.style.display = "none";
+					}
+				} catch (error) {
+					console.error("Erro ao verificar status de login:", error);
+				}
+			};
+
+			// NOVO: Função para carregar as configurações do ranking
+			const loadRankingConfig = async () => {
+				try {
+					const response = await fetch("/api/admin/config/ranking-date");
+					if (response.ok) {
+						const config = await response.json();
+						rankingDateInput.value = config.date || "";
+						considerTransitionCheckbox.checked =
+							config.considerTransition || false;
+					}
+				} catch (error) {
+					console.error("Erro ao carregar configurações do ranking:", error);
+				}
+			};
+
+			const handleLogin = async (event) => {
+				event.preventDefault();
+				const username = usernameInput.value;
+				const password = passwordInput.value;
+
+				try {
+					const response = await fetch("/api/admin/login", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ username, password }),
+					});
+
+					const data = await response.json();
+					if (response.ok) {
+						loginMessage.textContent = "";
+						checkLoginStatus();
+					} else {
+						loginMessage.textContent = data.message;
+					}
+				} catch (error) {
+					console.error("Erro de login:", error);
+					loginMessage.textContent = "Erro ao conectar. Tente novamente.";
+				}
+			};
+
+			const handleLogout = async () => {
+				try {
+					await fetch("/api/admin/logout");
+					checkLoginStatus();
+				} catch (error) {
+					console.error("Erro ao fazer logout:", error);
+				}
+			};
+
+			const fetchUsers = async () => {
+				try {
+					const response = await fetch("/api/admin/users");
+					const users = await response.json();
+					athleteSelect.innerHTML =
+						'<option value="">Todos os Atletas</option>';
+					users.forEach((user) => {
+						const option = document.createElement("option");
+						option.value = user.id;
+						option.textContent = user.name;
+						athleteSelect.appendChild(option);
+					});
+				} catch (error) {
+					console.error("Erro ao buscar usuários:", error);
+				}
+			};
+
+			const fetchActivities = async () => {
+				const athleteId = athleteSelect.value;
+				const date = dateInput.value;
+				const limit = limitInput.value;
+				const params = new URLSearchParams({
+					athleteId,
+					date,
+					limit,
+				});
+
+				try {
+					const response = await fetch(
+						`/api/admin/activities?${params.toString()}`
+					);
+					const activities = await response.json();
+					displayActivities(activities);
+				} catch (error) {
+					console.error("Erro ao buscar atividades:", error);
+					activityTableBody.innerHTML =
+						'<tr><td colspan="7">Erro ao carregar as atividades.</td></tr>';
+				}
+			};
+
+			const displayActivities = (activities) => {
+				activityTableBody.innerHTML = "";
+				if (activities.length === 0) {
+					activityTableBody.innerHTML =
+						'<tr><td colspan="7">Nenhuma atividade encontrada.</td></tr>';
+					return;
+				}
+				activities.forEach((activity) => {
+					const row = activityTableBody.insertRow();
+					const distanceInKm = (activity.distance / 1000).toFixed(2) + " km";
+					const formattedTime = formatTime(activity.moving_time);
+					row.innerHTML = `
+                    <td>${activity.athlete.firstname} ${
+						activity.athlete.lastname
+					}</td>
+                    <td>${activity.name}</td>
+                    <td>${activity.type}</td>
+                    <td>${new Date(
+											activity.start_date_local
+										).toLocaleDateString()}</td>
+                    <td>${distanceInKm}</td>
+                    <td>${formattedTime}</td>
+                    <td>
+                        <button class="edit-btn" data-id="${
+													activity.id
+												}" data-name="${activity.name}" data-distance="${
+						activity.distance
+					}" data-time="${activity.moving_time}">Editar</button>
+                        <button class="delete-btn" data-id="${
+													activity.id
+												}">Excluir</button>
+                    </td>
+                `;
+				});
+
+				document.querySelectorAll(".delete-btn").forEach((button) => {
+					button.addEventListener("click", deleteActivity);
+				});
+				document.querySelectorAll(".edit-btn").forEach((button) => {
+					button.addEventListener("click", showEditModal);
+				});
+			};
+
+			const showEditModal = (event) => {
+				const activityId = event.target.getAttribute("data-id");
+				const name = event.target.getAttribute("data-name");
+				const distance = event.target.getAttribute("data-distance");
+				const time = event.target.getAttribute("data-time");
+
+				document.getElementById("editActivityId").value = activityId;
+				document.getElementById("editName").value = name;
+				document.getElementById("editDistance").value = (
+					distance / 1000
+				).toFixed(2);
+				document.getElementById("editTime").value = time;
+
+				editModal.style.display = "block";
+			};
+
+			const handleEditSubmit = async (event) => {
+				event.preventDefault();
+				const activityId = document.getElementById("editActivityId").value;
+				const name = document.getElementById("editName").value;
+				const distance =
+					parseFloat(document.getElementById("editDistance").value) * 1000;
+				const moving_time = parseInt(document.getElementById("editTime").value);
+
+				try {
+					const response = await fetch(`/api/admin/activity/${activityId}`, {
+						method: "PUT",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ name, distance, moving_time }),
+					});
+
+					if (response.ok) {
+						alert("Atividade atualizada com sucesso!");
+						editModal.style.display = "none";
+						fetchActivities();
+					} else {
+						alert("Erro ao atualizar atividade.");
+					}
+				} catch (error) {
+					console.error("Erro ao atualizar atividade:", error);
+					alert("Erro ao atualizar atividade.");
+				}
+			};
+
+			const deleteActivity = async (event) => {
+				const activityId = event.target.getAttribute("data-id");
+				if (confirm("Tem certeza que deseja excluir esta atividade?")) {
+					try {
+						const response = await fetch(`/api/admin/activity/${activityId}`, {
+							method: "DELETE",
+						});
+						if (response.ok) {
+							alert("Atividade excluída com sucesso!");
+							fetchActivities();
+						} else {
+							alert("Erro ao excluir atividade.");
+						}
+					} catch (error) {
+						console.error("Erro ao excluir atividade:", error);
+						alert("Erro ao excluir atividade.");
+					}
+				}
+			};
+
+			const saveRankingConfig = async () => {
+				const date = rankingDateInput.value;
+				const considerTransition = considerTransitionCheckbox.checked;
+				if (!date) {
+					alert("Por favor, selecione uma data.");
+					return;
+				}
+				try {
+					const response = await fetch("/api/admin/config/ranking-date", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ date, considerTransition }),
+					});
+					if (response.ok) {
+						alert("Configuração do ranking salva com sucesso!");
+					} else {
+						alert("Erro ao salvar configuração.");
+					}
+				} catch (error) {
+					console.error("Erro ao salvar configuração:", error);
+					alert("Erro ao salvar configuração.");
+				}
+			};
+
+			const removeRankingFilter = async () => {
+				if (
+					confirm("Tem certeza que deseja remover o filtro de data do ranking?")
+				) {
+					try {
+						const response = await fetch("/api/admin/config/ranking-date", {
+							method: "DELETE",
+						});
+						if (response.ok) {
+							alert("Filtro de data removido com sucesso!");
+							window.location.reload();
+						} else {
+							alert("Erro ao remover filtro.");
+						}
+					} catch (error) {
+						console.error("Erro ao remover filtro:", error);
+						alert("Erro ao remover filtro.");
+					}
+				}
+			};
+
+			const deleteAllActivities = async () => {
+				if (
+					confirm(
+						"Tem certeza que deseja excluir TODAS as atividades? Esta ação não pode ser desfeita!"
+					)
+				) {
+					try {
+						const response = await fetch("/api/admin/activities/all", {
+							method: "DELETE",
+						});
+						if (response.ok) {
+							alert("Todas as atividades foram excluídas com sucesso!");
+							fetchActivities();
+						} else {
+							alert("Erro ao excluir atividades.");
+						}
+					} catch (error) {
+						console.error("Erro ao excluir todas as atividades:", error);
+						alert("Erro ao excluir todas as atividades.");
+					}
+				}
+			};
+
+			loginForm.addEventListener("submit", handleLogin);
+			logoutBtn.addEventListener("click", handleLogout);
+			filterBtn.addEventListener("click", fetchActivities);
+			editForm.addEventListener("submit", handleEditSubmit);
+			cancelEditBtn.addEventListener(
+				"click",
+				() => (editModal.style.display = "none")
+			);
+			window.addEventListener("click", (event) => {
+				if (event.target === editModal) {
+					editModal.style.display = "none";
+				}
+			});
+			saveRankingConfigBtn.addEventListener("click", saveRankingConfig);
+			removeRankingFilterBtn.addEventListener("click", removeRankingFilter);
+			deleteAllActivitiesBtn.addEventListener("click", deleteAllActivities);
+
+			checkLoginStatus();
+		</script>
+	</body>
+</html>

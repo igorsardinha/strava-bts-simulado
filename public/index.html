@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>2ª Etapa - Simulado BTS</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+		<style>
+			body {
+				font-family: sans-serif;
+				text-align: center;
+				margin-top: 50px;
+			}
+			#logo {
+				border-radius: 50%;
+				width: 150px;
+				height: 150px;
+				margin-right: 15px;
+				border: 1px solid #ccc;
+			}
+			.btn {
+				color: white;
+				padding: 15px 30px;
+				text-decoration: none;
+				border-radius: 5px;
+				font-size: 1.2em;
+				border: none;
+				cursor: pointer;
+				display: inline-block;
+				margin: 5px;
+			}
+			.btn-strava {
+				background-color: #fc4c02;
+			}
+			.btn-ranking {
+				background-color: #007bff;
+			} /* NOVO: Cor para o botão de ranking */
+			.btn-admin {
+				background-color: #6c757d;
+			} /* NOVO: Cor para o botão de admin */
+			.btn-connected {
+				background-color: #4caf50;
+			}
+			.btn-disabled {
+				background-color: #cccccc;
+				cursor: not-allowed;
+			}
+			.btn-disconnect {
+				background-color: #f44336;
+			}
+			.user-info {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 20px;
+			}
+			.user-info img {
+				border-radius: 50%;
+				width: 60px;
+				height: 60px;
+				margin-right: 15px;
+			}
+			.user-info h2 {
+				margin: 0;
+			}
+			.disconnect-icon {
+				background-color: transparent;
+				border: none;
+				color: #f44336;
+				font-size: 1.5em;
+				cursor: pointer;
+				padding: 5px;
+				margin-left: 20px;
+			}
+			.disconnect-icon:hover {
+				color: #d32f2f;
+			}
+			.activity-list {
+				text-align: left;
+				margin: 20px auto;
+				max-width: 800px;
+				width: 90%;
+			}
+			.activity-list h3 {
+				border-bottom: 2px solid #ccc;
+				padding-bottom: 5px;
+			}
+			.activity-item {
+				border: 1px solid #eee;
+				padding: 10px;
+				margin-bottom: 10px;
+				border-radius: 5px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				cursor: pointer;
+				position: relative;
+			}
+			.activity-item.inactive-activity {
+				opacity: 0.6;
+				background-color: #f9f9f9;
+				cursor: pointer;
+			}
+			.activity-item.inactive-activity::after {
+				content: "DESCONSIDERADA";
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				font-size: 1em;
+				color: #f44336;
+				font-weight: bold;
+				background-color: rgba(255, 255, 255, 0.8);
+				padding: 5px 10px;
+				border-radius: 5px;
+			}
+			.activity-info {
+				display: flex;
+				align-items: center;
+			}
+			.activity-emoji {
+				font-size: 2em;
+				margin-right: 15px;
+			}
+			.back-btn {
+				margin-bottom: 20px;
+			}
+			.controls,
+			.public-controls {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				margin-top: 20px;
+			}
+			.controls .btn,
+			.public-controls .btn {
+				margin: 5px;
+			}
+
+			/* Estilos do modal */
+			.modal {
+				display: none;
+				position: fixed;
+				z-index: 1;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				overflow: auto;
+				background-color: rgba(0, 0, 0, 0.4);
+				padding-top: 60px;
+			}
+			.modal-content {
+				background-color: #fefefe;
+				margin: 5% auto;
+				padding: 20px;
+				border: 1px solid #888;
+				width: 80%;
+				max-width: 500px;
+				border-radius: 10px;
+				position: relative;
+			}
+			.close-btn {
+				color: #aaa;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+			.close-btn:hover,
+			.close-btn:focus {
+				color: black;
+				text-decoration: none;
+			}
+			.detail-item {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 8px 0;
+				border-bottom: 1px solid #eee;
+			}
+			.detail-item:last-child {
+				border-bottom: none;
+			}
+			.detail-item .label {
+				font-weight: bold;
+				display: flex;
+				align-items: center;
+			}
+			.detail-item .value {
+				text-align: right;
+			}
+			.detail-item .icon {
+				margin-right: 10px;
+			}
+			/* Media Queries para responsividade */
+			@media (max-width: 600px) {
+				body {
+					margin-top: 20px;
+					font-size: 0.9em;
+				}
+				h1 {
+					font-size: 1.5em;
+				}
+				.btn {
+					padding: 10px 20px;
+					font-size: 1em;
+				}
+				.user-info {
+					flex-direction: column;
+					text-align: center;
+				}
+				.user-info img {
+					margin-right: 0;
+					margin-bottom: 10px;
+				}
+				.user-info h2 {
+					font-size: 1.2em;
+				}
+				.activity-item {
+					flex-direction: column;
+					text-align: center;
+				}
+				.activity-emoji {
+					margin-right: 0;
+					margin-bottom: 10px;
+				}
+				.controls .btn,
+				.public-controls .btn {
+					width: 90%;
+					margin: 5px auto;
+				}
+				.disconnect-icon {
+					position: static;
+					margin-top: 10px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="main-page">
+			<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+			<h1>2ª Etapa - Simulado BTS</h1>
+			<p id="introText">
+				Clique no botão abaixo para autenticar sua conta e permitir o acesso às
+				suas atividades.
+			</p>
+			<br />
+			<br />
+			<br />
+			<a href="/api/strava/auth" id="connectBtn">
+				<img
+					src="/assets/btn_strava_connect_with_orange_x2.svg"
+					alt="Conectar com Strava"
+					style="max-width: 200px; height: auto" />
+			</a>
+
+			<div id="userInfo" class="user-info" style="display: none">
+				<img
+					id="userPhoto"
+					src="https://via.placeholder.com/60"
+					alt="Foto do Usuário" />
+				<h2><span id="userName"></span></h2>
+				<button id="disconnectBtn" class="disconnect-icon">
+					<i class="fa-solid fa-power-off"></i>
+				</button>
+			</div>
+
+			<div id="controls" style="display: none">
+				<hr />
+				<h2>Minhas Atividades</h2>
+				<button id="sendActivitiesBtn" class="btn btn-strava">
+					Enviar minhas atividades
+				</button>
+				<a href="/ranking.html" class="btn btn-ranking">Ver Ranking</a>
+			</div>
+
+			<div id="activitiesList" class="activity-list" style="display: none">
+				<h3>Últimas 10 Atividades Enviadas</h3>
+			</div>
+		</div>
+
+		<div id="activityDetailsModal" class="modal">
+			<div class="modal-content">
+				<span class="close-btn">&times;</span>
+				<h3 id="modalTitle">Detalhes da Atividade</h3>
+				<div id="modalContent" class="activity-details-content"></div>
+			</div>
+		</div>
+
+		<div id="public-controls" class="public-controls">
+			<a href="/ranking.html" class="btn btn-ranking">Ver Ranking</a>
+			<a href="/admin.html" class="btn btn-admin">Painel Admin</a>
+		</div>
+
+		<script>
+			const connectBtn = document.getElementById("connectBtn");
+			const userInfoDiv = document.getElementById("userInfo");
+			const userPhoto = document.getElementById("userPhoto");
+			const userName = document.getElementById("userName");
+			const controlsDiv = document.getElementById("controls");
+			const publicControlsDiv = document.getElementById("public-controls");
+			const sendActivitiesBtn = document.getElementById("sendActivitiesBtn");
+			const disconnectBtn = document.getElementById("disconnectBtn");
+			const activitiesListDiv = document.getElementById("activitiesList");
+			const mainPage = document.getElementById("main-page");
+			const activityDetailsModal = document.getElementById(
+				"activityDetailsModal"
+			);
+			const modalTitle = document.getElementById("modalTitle");
+			const modalContent = document.getElementById("modalContent");
+			const closeBtn = document.querySelector(".close-btn");
+			const introText = document.getElementById("introText");
+
+			const formatTime = (seconds) => {
+				const h = Math.floor(seconds / 3600);
+				const m = Math.floor((seconds % 3600) / 60);
+				const s = seconds % 60;
+				return `${h}h ${m}m ${s}s`;
+			};
+
+			const formatPace = (distance, time) => {
+				if (distance === 0 || time === 0) return "N/A";
+				const paceInSecondsPerKm = (time * 1000) / distance;
+				const minutes = Math.floor(paceInSecondsPerKm / 60);
+				const seconds = Math.floor(paceInSecondsPerKm % 60);
+				return `${minutes}m ${seconds}s /km`;
+			};
+
+			const getActivityEmoji = (type) => {
+				switch (type) {
+					case "Ride":
+						return "🚲";
+					case "Run":
+						return "🏃‍♂️";
+					case "Walk":
+						return "🚶‍♀️";
+					case "Swim":
+						return "🏊‍♀️";
+					case "Hike":
+						return "⛰️";
+					case "Transition":
+						return "➡️";
+					default:
+						return "💪";
+				}
+			};
+
+			// Funções de navegação
+			const showMainPage = () => {
+				mainPage.style.display = "block";
+			};
+
+			const showActivityDetails = (activityId) => {
+				fetchActivityDetails(activityId);
+				activityDetailsModal.style.display = "block";
+			};
+
+			const checkStatus = async () => {
+				try {
+					const response = await fetch("/api/strava/status");
+					const data = await response.json();
+					if (data.status === "connected") {
+						connectBtn.style.display = "none";
+						publicControlsDiv.style.display = "none";
+						introText.textContent =
+							"Você já está conectado ao Strava. Use o botão abaixo para enviar suas atividades.";
+						controlsDiv.style.display = "block";
+						userInfoDiv.style.display = "flex";
+
+						loadUserInfo();
+						loadSavedActivities();
+					} else {
+						connectBtn.style.display = "inline-block";
+						publicControlsDiv.style.display = "flex";
+						controlsDiv.style.display = "none";
+						userInfoDiv.style.display = "none";
+						activitiesListDiv.style.display = "none";
+						introText.textContent =
+							"Clique no botão abaixo para autenticar sua conta e permitir o acesso às suas atividades.";
+					}
+				} catch (error) {
+					console.error("Erro ao verificar status:", error);
+				}
+			};
+
+			const loadUserInfo = async () => {
+				try {
+					const response = await fetch("/api/strava/user");
+					const user = await response.json();
+					userName.textContent = user.name;
+					userPhoto.src =
+						user.profile_photo || "https://via.placeholder.com/60";
+				} catch (error) {
+					console.error("Erro ao carregar informações do usuário:", error);
+				}
+			};
+
+			const loadSavedActivities = async () => {
+				try {
+					const response = await fetch("/api/strava/saved-activities");
+					const data = await response.json();
+					if (data.activities) {
+						displayActivities(data.activities, data.configDate);
+					}
+				} catch (error) {
+					console.error("Erro ao carregar atividades salvas:", error);
+				}
+			};
+
+			const displayActivities = (activities, configDate) => {
+				if (!activities || activities.length === 0) {
+					activitiesListDiv.style.display = "none";
+					return;
+				}
+
+				activitiesListDiv.innerHTML = "<h3>Últimas 10 Atividades Enviadas</h3>";
+				const lastTenActivities = activities.slice(0, 10);
+
+				lastTenActivities.forEach((activity) => {
+					const distanceInKm = (activity.distance / 1000).toFixed(2);
+					const emoji = getActivityEmoji(activity.type);
+					const activityDate = activity.start_date_local.split("T")[0];
+
+					const activityItem = document.createElement("div");
+					activityItem.className = "activity-item";
+
+					if (configDate && activityDate !== configDate) {
+						activityItem.classList.add("inactive-activity");
+					}
+
+					activityItem.innerHTML = `
+          <div class="activity-info">
+            <div class="activity-emoji">${emoji}</div>
+            <div>
+              <strong>${activity.name}</strong> <br>
+              ${distanceInKm} km
+            </div>
+          </div>
+        `;
+
+					activityItem.addEventListener("click", () =>
+						showActivityDetails(activity.id)
+					);
+
+					activitiesListDiv.appendChild(activityItem);
+				});
+				activitiesListDiv.style.display = "block";
+			};
+
+			const fetchActivityDetails = async (activityId) => {
+				try {
+					const response = await fetch(`/api/strava/activity/${activityId}`);
+					const activity = await response.json();
+					const start = new Date(activity.start_date);
+
+					modalTitle.textContent = `${activity.name}`;
+					modalContent.innerHTML = `
+          <div class="details-text-content">
+            <div class="detail-item">
+              <span class="label"><span class="icon">📅</span> Data:</span>
+              <span class="value">${start.toLocaleDateString()}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label"><span class="icon">${getActivityEmoji(
+								activity.type
+							)}</span> Tipo:</span>
+              <span class="value">${activity.type}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label"><span class="icon">📏</span> Distância:</span>
+              <span class="value">${(activity.distance / 1000).toFixed(
+								2
+							)} km</span>
+            </div>
+            <div class="detail-item">
+              <span class="label"><span class="icon">⏰</span> Duração:</span>
+              <span class="value">${formatTime(activity.moving_time)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label"><span class="icon">⏱️</span> Ritmo Médio:</span>
+                <span class="value">${formatPace(
+									activity.distance,
+									activity.moving_time
+								)}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label"><span class="icon">⛰️</span> Elevação:</span>
+              <span class="value">${activity.total_elevation_gain} metros</span>
+            </div>
+            <div class="detail-item">
+              <span class="label"><span class="icon">💨</span> Velocidade Média:</span>
+              <span class="value">${(activity.average_speed * 3.6).toFixed(
+								2
+							)} km/h</span>
+            </div>
+            ${
+							activity.average_heartrate
+								? `
+            <div class="detail-item">
+              <span class="label"><span class="icon">❤️</span> HR:</span>
+              <span class="value">${activity.average_heartrate} BPM</span>
+            </div>
+            `
+								: ""
+						}
+          </div>
+        `;
+				} catch (error) {
+					console.error("Erro ao buscar detalhes da atividade:", error);
+					modalContent.innerHTML =
+						"<p>Detalhes da atividade não encontrados.</p>";
+				}
+			};
+
+			connectBtn.addEventListener("click", () => {
+				window.location.href = "/api/strava/auth";
+			});
+
+			sendActivitiesBtn.addEventListener("click", async () => {
+				if (userInfoDiv.style.display !== "flex") {
+					alert("Você precisa se conectar ao Strava primeiro.");
+					return;
+				}
+				try {
+					await fetch("/api/strava/activities");
+					alert("Atividades enviadas e salvas com sucesso!");
+					const savedActivitiesResponse = await fetch(
+						"/api/strava/saved-activities"
+					);
+					const savedActivitiesData = await savedActivitiesResponse.json();
+					displayActivities(
+						savedActivitiesData.activities,
+						savedActivitiesData.configDate
+					);
+				} catch (error) {
+					alert("Erro ao enviar atividades.");
+					console.error(error);
+				}
+			});
+
+			disconnectBtn.addEventListener("click", async () => {
+				try {
+					await fetch("/api/strava/disconnect");
+					alert("Você foi desconectado com sucesso.");
+					window.location.reload();
+				} catch (error) {
+					console.error("Erro ao desconectar:", error);
+					alert("Não foi possível desconectar. Tente novamente.");
+				}
+			});
+
+			closeBtn.addEventListener("click", () => {
+				activityDetailsModal.style.display = "none";
+			});
+			window.addEventListener("click", (event) => {
+				if (event.target === activityDetailsModal) {
+					activityDetailsModal.style.display = "none";
+				}
+			});
+
+			checkStatus();
+		</script>
+	</body>
+</html>
