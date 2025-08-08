@@ -1,0 +1,11 @@
+# Dependências do Node
+node_modules/
+
+# Variáveis de ambiente com informações sensíveis
+.env
+
+# Arquivo de banco de dados local
+db.json
+
+# Logs do npm
+npm-debug.log*
