@@ -7,26 +7,95 @@
 		<link
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-
 		<style>
 			body {
 				font-family: sans-serif;
 				text-align: center;
-				margin-top: 50px;
+				margin: 0;
+				padding-top: 70px;
+				background-color: #f4f4f4;
 			}
 			#logo {
 				border-radius: 50%;
-				width: 150px;
-				height: 150px;
-				margin-right: 15px;
+				width: 30px;
+				height: 30px;
 				border: 1px solid #ccc;
+			}
+			.app-header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				background-color: #fff;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				padding: 10px 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				z-index: 100;
+			}
+			.header-left {
+				display: flex;
+				align-items: center;
+			}
+			.header-right {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-menu-links {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.header-menu-links a {
+				text-decoration: none;
+				color: #333;
+				padding: 5px 10px;
+				border-radius: 5px;
+				transition: background-color 0.3s;
+			}
+			.header-menu-links a:hover {
+				background-color: #f2f2f2;
+			}
+			.hamburger {
+				display: none;
+				font-size: 1.5em;
+				cursor: pointer;
+			}
+			.user-info {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.user-info img {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+				object-fit: cover;
+			}
+			.user-info .user-name {
+				font-size: 1em;
+				margin: 0;
+			}
+			.disconnect-icon {
+				background-color: transparent;
+				border: none;
+				color: #f44336;
+				font-size: 1.2em;
+				cursor: pointer;
+				padding: 5px;
+			}
+			.disconnect-icon:hover {
+				color: #d32f2f;
 			}
 			.btn {
 				color: white;
-				padding: 15px 30px;
+				padding: 10px 20px;
 				text-decoration: none;
 				border-radius: 5px;
-				font-size: 1.2em;
+				font-size: 1em;
 				border: none;
 				cursor: pointer;
 				display: inline-block;
@@ -37,46 +106,9 @@
 			}
 			.btn-ranking {
 				background-color: #007bff;
-			} /* NOVO: Cor para o botão de ranking */
+			}
 			.btn-admin {
 				background-color: #6c757d;
-			} /* NOVO: Cor para o botão de admin */
-			.btn-connected {
-				background-color: #4caf50;
-			}
-			.btn-disabled {
-				background-color: #cccccc;
-				cursor: not-allowed;
-			}
-			.btn-disconnect {
-				background-color: #f44336;
-			}
-			.user-info {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				margin-bottom: 20px;
-			}
-			.user-info img {
-				border-radius: 50%;
-				width: 60px;
-				height: 60px;
-				margin-right: 15px;
-			}
-			.user-info h2 {
-				margin: 0;
-			}
-			.disconnect-icon {
-				background-color: transparent;
-				border: none;
-				color: #f44336;
-				font-size: 1.5em;
-				cursor: pointer;
-				padding: 5px;
-				margin-left: 20px;
-			}
-			.disconnect-icon:hover {
-				color: #d32f2f;
 			}
 			.activity-list {
 				text-align: left;
@@ -91,7 +123,7 @@
 			.activity-item {
 				border: 1px solid #eee;
 				padding: 10px;
-				margin-bottom: 10px;
+				margin-bottom: 5px;
 				border-radius: 5px;
 				display: flex;
 				align-items: center;
@@ -110,7 +142,7 @@
 				top: 50%;
 				left: 50%;
 				transform: translate(-50%, -50%);
-				font-size: 1em;
+				font-size: 0.9em;
 				color: #f44336;
 				font-weight: bold;
 				background-color: rgba(255, 255, 255, 0.8);
@@ -122,151 +154,165 @@
 				align-items: center;
 			}
 			.activity-emoji {
-				font-size: 2em;
-				margin-right: 15px;
+				font-size: 1.5em;
+				margin-right: 10px;
 			}
-			.back-btn {
-				margin-bottom: 20px;
+			#liveStopwatchContainer {
+				margin-top: 20px;
+				padding: 15px;
+				background-color: #f2f2f2;
+				border-radius: 10px;
+				max-width: 800px;
+				margin: 20px auto;
 			}
-			.controls,
-			.public-controls {
+			#liveStopwatchDisplay {
+				font-size: 2.5em;
+				font-weight: bold;
+				color: #28a745;
+			}
+			.display {
+				font-size: 6em;
+				font-weight: bold;
+				margin-bottom: 30px;
+				color: #0056b3;
 				display: flex;
-				flex-wrap: wrap;
+				gap: 5px;
 				justify-content: center;
+			}
+			#liveStopwatchStatus {
+				font-size: 0.9em;
+				color: #555;
+			}
+			.connect-btn-container {
 				margin-top: 20px;
 			}
-			.controls .btn,
-			.public-controls .btn {
-				margin: 5px;
-			}
-
-			/* Estilos do modal */
-			.modal {
-				display: none;
-				position: fixed;
-				z-index: 1;
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: 100%;
-				overflow: auto;
-				background-color: rgba(0, 0, 0, 0.4);
-				padding-top: 60px;
-			}
-			.modal-content {
-				background-color: #fefefe;
-				margin: 5% auto;
-				padding: 20px;
-				border: 1px solid #888;
-				width: 80%;
-				max-width: 500px;
-				border-radius: 10px;
-				position: relative;
-			}
-			.close-btn {
-				color: #aaa;
-				float: right;
-				font-size: 28px;
-				font-weight: bold;
-				cursor: pointer;
-			}
-			.close-btn:hover,
-			.close-btn:focus {
-				color: black;
-				text-decoration: none;
+			.activity-details-panel {
+				padding: 15px;
+				background-color: #fff;
+				border: 1px solid #ddd;
+				border-radius: 5px;
+				margin-top: 5px;
+				margin-bottom: 10px;
+				text-align: left;
 			}
 			.detail-item {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
 				padding: 8px 0;
 				border-bottom: 1px solid #eee;
+				display: flex;
+				gap: 10px;
+				align-items: center;
 			}
 			.detail-item:last-child {
 				border-bottom: none;
 			}
 			.detail-item .label {
 				font-weight: bold;
-				display: flex;
-				align-items: center;
+				width: 120px;
+				text-align: left;
 			}
 			.detail-item .value {
-				text-align: right;
+				text-align: left;
 			}
 			.detail-item .icon {
-				margin-right: 10px;
+				margin-right: 5px;
 			}
-			/* Media Queries para responsividade */
-			@media (max-width: 600px) {
-				body {
-					margin-top: 20px;
-					font-size: 0.9em;
+
+			@media (max-width: 768px) {
+				.app-header {
+					flex-wrap: wrap;
+					padding: 10px;
 				}
-				h1 {
-					font-size: 1.5em;
+				.header-left {
+					width: 100%;
+					justify-content: space-between;
+					gap: 0;
 				}
-				.btn {
-					padding: 10px 20px;
-					font-size: 1em;
+				.header-right {
+					flex-direction: column;
+					position: absolute;
+					top: 50px;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+					display: none;
+					padding: 10px 0;
+					z-index: 99;
+				}
+				.header-right.active {
+					display: flex;
+				}
+				.header-menu-links {
+					flex-direction: column;
+					width: 100%;
+					align-items: center;
+					gap: 5px;
+				}
+				.header-menu-links a {
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
 				}
 				.user-info {
-					flex-direction: column;
-					text-align: center;
-				}
-				.user-info img {
-					margin-right: 0;
-					margin-bottom: 10px;
-				}
-				.user-info h2 {
-					font-size: 1.2em;
-				}
-				.activity-item {
-					flex-direction: column;
-					text-align: center;
-				}
-				.activity-emoji {
-					margin-right: 0;
-					margin-bottom: 10px;
-				}
-				.controls .btn,
-				.public-controls .btn {
-					width: 90%;
-					margin: 5px auto;
-				}
-				.disconnect-icon {
-					position: static;
+					width: 100%;
+					padding: 10px 0;
+					justify-content: center;
+					margin-left: 0;
+					border-top: 1px solid #eee;
 					margin-top: 10px;
+				}
+				.hamburger {
+					display: block;
 				}
 			}
 		</style>
 	</head>
 	<body>
+		<header class="app-header">
+			<div class="header-left">
+				<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+				<span class="hamburger" id="hamburgerBtn">&#9776;</span>
+			</div>
+			<div class="header-right" id="header-right-container">
+				<div class="header-menu-links" id="header-menu">
+					<a href="/ranking.html">Ver Ranking</a>
+					<a href="/admin.html">Painel Admin</a>
+					<a href="/stopwatch.html">Cronômetro</a>
+				</div>
+				<div id="userInfo" class="user-info" style="display: none">
+					<img
+						id="userPhoto"
+						src="https://via.placeholder.com/30"
+						alt="Foto do Usuário" />
+					<span class="user-name"><span id="userName"></span></span>
+					<button id="disconnectBtn" class="disconnect-icon">
+						<i class="fa-solid fa-power-off"></i>
+					</button>
+				</div>
+			</div>
+		</header>
+
 		<div id="main-page">
-			<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
 			<h1>2ª Etapa - Simulado BTS</h1>
 			<p id="introText">
 				Clique no botão abaixo para autenticar sua conta e permitir o acesso às
 				suas atividades.
 			</p>
-			<br />
-			<br />
-			<br />
-			<a href="/api/strava/auth" id="connectBtn">
-				<img
-					src="/assets/btn_strava_connect_with_orange_x2.svg"
-					alt="Conectar com Strava"
-					style="max-width: 200px; height: auto" />
-			</a>
 
-			<div id="userInfo" class="user-info" style="display: none">
-				<img
-					id="userPhoto"
-					src="https://via.placeholder.com/60"
-					alt="Foto do Usuário" />
-				<h2><span id="userName"></span></h2>
-				<button id="disconnectBtn" class="disconnect-icon">
-					<i class="fa-solid fa-power-off"></i>
-				</button>
+			<div id="liveStopwatchContainer">
+				<h2>Tempo do Simulado</h2>
+				<div id="liveStopwatchDisplay" class="mainDisplay">00:00:00:00</div>
+				<p id="liveStopwatchStatus">Não iniciado</p>
+			</div>
+
+			<div class="connect-btn-container" id="connectContainer">
+				<a href="/api/strava/auth" id="connectBtn">
+					<img
+						src="/assets/btn_strava_connect_with_orange_x2.svg"
+						alt="Conectar com Strava"
+						style="max-width: 200px; height: auto" />
+				</a>
 			</div>
 
 			<div id="controls" style="display: none">
@@ -275,7 +321,6 @@
 				<button id="sendActivitiesBtn" class="btn btn-strava">
 					Enviar minhas atividades
 				</button>
-				<a href="/ranking.html" class="btn btn-ranking">Ver Ranking</a>
 			</div>
 
 			<div id="activitiesList" class="activity-list" style="display: none">
@@ -283,43 +328,47 @@
 			</div>
 		</div>
 
-		<div id="activityDetailsModal" class="modal">
-			<div class="modal-content">
-				<span class="close-btn">&times;</span>
-				<h3 id="modalTitle">Detalhes da Atividade</h3>
-				<div id="modalContent" class="activity-details-content"></div>
-			</div>
-		</div>
-
-		<div id="public-controls" class="public-controls">
-			<a href="/ranking.html" class="btn btn-ranking">Ver Ranking</a>
-			<a href="/admin.html" class="btn btn-admin">Painel Admin</a>
-		</div>
-
 		<script>
 			const connectBtn = document.getElementById("connectBtn");
+			const connectContainer = document.getElementById("connectContainer");
 			const userInfoDiv = document.getElementById("userInfo");
 			const userPhoto = document.getElementById("userPhoto");
-			const userName = document.getElementById("userName");
+			const userNameSpan = document.getElementById("userName");
 			const controlsDiv = document.getElementById("controls");
-			const publicControlsDiv = document.getElementById("public-controls");
 			const sendActivitiesBtn = document.getElementById("sendActivitiesBtn");
 			const disconnectBtn = document.getElementById("disconnectBtn");
 			const activitiesListDiv = document.getElementById("activitiesList");
 			const mainPage = document.getElementById("main-page");
-			const activityDetailsModal = document.getElementById(
-				"activityDetailsModal"
+			const hamburgerBtn = document.getElementById("hamburgerBtn");
+			const headerMenu = document.getElementById("header-menu");
+			const headerRightContainer = document.getElementById(
+				"header-right-container"
 			);
-			const modalTitle = document.getElementById("modalTitle");
-			const modalContent = document.getElementById("modalContent");
-			const closeBtn = document.querySelector(".close-btn");
-			const introText = document.getElementById("introText");
+
+			let liveStopwatchInterval = null;
+			let currentlyOpenDetailsId = null;
 
 			const formatTime = (seconds) => {
 				const h = Math.floor(seconds / 3600);
 				const m = Math.floor((seconds % 3600) / 60);
 				const s = seconds % 60;
 				return `${h}h ${m}m ${s}s`;
+			};
+
+			const formatTimeMs = (ms) => {
+				let totalSeconds = Math.floor(ms / 1000);
+				let totalMinutes = Math.floor(totalSeconds / 60);
+				let totalHours = Math.floor(totalMinutes / 60);
+
+				let displayHours = String(totalHours).padStart(2, "0");
+				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
+				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
+				let displayMilliseconds = String(Math.floor((ms % 1000) / 10)).padStart(
+					2,
+					"0"
+				);
+
+				return `${displayHours}:${displayMinutes}:${displaySeconds}:${displayMilliseconds}`;
 			};
 
 			const formatPace = (distance, time) => {
@@ -349,14 +398,30 @@
 				}
 			};
 
-			// Funções de navegação
-			const showMainPage = () => {
-				mainPage.style.display = "block";
-			};
-
-			const showActivityDetails = (activityId) => {
-				fetchActivityDetails(activityId);
-				activityDetailsModal.style.display = "block";
+			const fetchLiveStopwatchState = async () => {
+				try {
+					const response = await fetch("/api/strava/stopwatch/real-time-state");
+					if (response.ok) {
+						const state = await response.json();
+						let displayTime = state.elapsedTime;
+						if (state.isRunning) {
+							const timeElapsedSinceSave = Date.now() - state.lastSaved;
+							displayTime += timeElapsedSinceSave;
+							liveStopwatchStatus.textContent = `Em andamento`;
+						} else {
+							displayTime = state.elapsedTime;
+							liveStopwatchStatus.textContent = `Parado`;
+						}
+						liveStopwatchDisplay.textContent = formatTimeMs(displayTime);
+					} else {
+						liveStopwatchDisplay.textContent = "00:00:00:00";
+						liveStopwatchStatus.textContent = "Não iniciado";
+					}
+				} catch (error) {
+					console.error("Erro ao buscar estado do cronômetro:", error);
+					liveStopwatchDisplay.textContent = "---";
+					liveStopwatchStatus.textContent = "Erro de conexão";
+				}
 			};
 
 			const checkStatus = async () => {
@@ -364,23 +429,26 @@
 					const response = await fetch("/api/strava/status");
 					const data = await response.json();
 					if (data.status === "connected") {
-						connectBtn.style.display = "none";
-						publicControlsDiv.style.display = "none";
+						connectContainer.style.display = "none";
 						introText.textContent =
 							"Você já está conectado ao Strava. Use o botão abaixo para enviar suas atividades.";
 						controlsDiv.style.display = "block";
-						userInfoDiv.style.display = "flex";
 
+						if (window.innerWidth > 768) {
+							headerRightContainer.appendChild(userInfoDiv);
+						} else {
+							headerMenu.appendChild(userInfoDiv);
+						}
+
+						userInfoDiv.style.display = "flex";
 						loadUserInfo();
 						loadSavedActivities();
 					} else {
-						connectBtn.style.display = "inline-block";
-						publicControlsDiv.style.display = "flex";
-						controlsDiv.style.display = "none";
-						userInfoDiv.style.display = "none";
-						activitiesListDiv.style.display = "none";
+						connectContainer.style.display = "block";
 						introText.textContent =
 							"Clique no botão abaixo para autenticar sua conta e permitir o acesso às suas atividades.";
+						controlsDiv.style.display = "none";
+						userInfoDiv.style.display = "none";
 					}
 				} catch (error) {
 					console.error("Erro ao verificar status:", error);
@@ -391,7 +459,7 @@
 				try {
 					const response = await fetch("/api/strava/user");
 					const user = await response.json();
-					userName.textContent = user.name;
+					userNameSpan.textContent = user.name;
 					userPhoto.src =
 						user.profile_photo || "https://via.placeholder.com/60";
 				} catch (error) {
@@ -442,24 +510,46 @@
           </div>
         `;
 
-					activityItem.addEventListener("click", () =>
-						showActivityDetails(activity.id)
-					);
+					const detailsContainerId = `activity-details-${activity.id}`;
+
+					activityItem.addEventListener("click", () => {
+						if (currentlyOpenDetailsId === activity.id) {
+							const openPanel = document.getElementById(detailsContainerId);
+							if (openPanel) {
+								openPanel.remove();
+								currentlyOpenDetailsId = null;
+							}
+						} else {
+							if (currentlyOpenDetailsId !== null) {
+								const previousPanel = document.getElementById(
+									`activity-details-${currentlyOpenDetailsId}`
+								);
+								if (previousPanel) {
+									previousPanel.remove();
+								}
+							}
+							currentlyOpenDetailsId = activity.id;
+							const detailsPanel = document.createElement("div");
+							detailsPanel.id = detailsContainerId;
+							detailsPanel.className = "activity-details-panel";
+							detailsPanel.innerHTML = "<p>Carregando detalhes...</p>";
+							activityItem.insertAdjacentElement("afterend", detailsPanel);
+							fetchActivityDetails(activity.id, detailsPanel);
+						}
+					});
 
 					activitiesListDiv.appendChild(activityItem);
 				});
 				activitiesListDiv.style.display = "block";
 			};
 
-			const fetchActivityDetails = async (activityId) => {
+			const fetchActivityDetails = async (activityId, detailsPanel) => {
 				try {
 					const response = await fetch(`/api/strava/activity/${activityId}`);
 					const activity = await response.json();
-					const start = new Date(activity.start_date);
-
-					modalTitle.textContent = `${activity.name}`;
-					modalContent.innerHTML = `
-          <div class="details-text-content">
+					if (activity) {
+						const start = new Date(activity.start_date);
+						detailsPanel.innerHTML = `
             <div class="detail-item">
               <span class="label"><span class="icon">📅</span> Data:</span>
               <span class="value">${start.toLocaleDateString()}</span>
@@ -507,18 +597,16 @@
             `
 								: ""
 						}
-          </div>
-        `;
+          `;
+					} else {
+						detailsPanel.innerHTML =
+							"<p>Detalhes da atividade não encontrados.</p>";
+					}
 				} catch (error) {
 					console.error("Erro ao buscar detalhes da atividade:", error);
-					modalContent.innerHTML =
-						"<p>Detalhes da atividade não encontrados.</p>";
+					detailsPanel.innerHTML = "<p>Erro ao carregar detalhes.</p>";
 				}
 			};
-
-			connectBtn.addEventListener("click", () => {
-				window.location.href = "/api/strava/auth";
-			});
 
 			sendActivitiesBtn.addEventListener("click", async () => {
 				if (userInfoDiv.style.display !== "flex") {
@@ -553,16 +641,13 @@
 				}
 			});
 
-			closeBtn.addEventListener("click", () => {
-				activityDetailsModal.style.display = "none";
-			});
-			window.addEventListener("click", (event) => {
-				if (event.target === activityDetailsModal) {
-					activityDetailsModal.style.display = "none";
-				}
+			hamburgerBtn.addEventListener("click", () => {
+				const menuContainer = document.getElementById("header-right-container");
+				menuContainer.classList.toggle("active");
 			});
 
 			checkStatus();
+			setInterval(fetchLiveStopwatchState, 100);
 		</script>
 	</body>
 </html>

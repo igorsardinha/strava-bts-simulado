@@ -8,42 +8,114 @@
 			rel="stylesheet"
 			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 		<style>
-			#logo {
-				border-radius: 50%;
-				width: 150px;
-				height: 150px;
-				margin-right: 15px;
-				border: 1px solid #ccc;
-			}
 			body {
 				font-family: sans-serif;
 				text-align: center;
-				margin-top: 50px;
+				margin: 0;
+				padding-top: 70px;
+				background-color: #f4f4f4;
+			}
+			#logo {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+			}
+			.app-header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				background-color: #fff;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				padding: 10px 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				z-index: 100;
+			}
+			.header-left {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-right {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-menu-links {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.header-menu-links a {
+				text-decoration: none;
+				color: #333;
+				padding: 5px 10px;
+				border-radius: 5px;
+				transition: background-color 0.3s;
+			}
+			.header-menu-links a:hover {
+				background-color: #f2f2f2;
+			}
+			.hamburger {
+				display: none;
+				font-size: 1.5em;
+				cursor: pointer;
+			}
+			.user-info {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.user-info img {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+				object-fit: cover;
+			}
+			.user-info .user-name {
+				font-size: 1em;
+				margin: 0;
+			}
+			.disconnect-icon {
+				background-color: transparent;
+				border: none;
+				color: #f44336;
+				font-size: 1.2em;
+				cursor: pointer;
+				padding: 5px;
+			}
+			.disconnect-icon:hover {
+				color: #d32f2f;
 			}
 			.btn {
 				color: white;
-				padding: 15px 30px;
+				padding: 10px 20px;
 				text-decoration: none;
 				border-radius: 5px;
-				font-size: 1.2em;
+				font-size: 1em;
 				border: none;
 				cursor: pointer;
 				display: inline-block;
-				margin-top: 10px;
+				margin: 5px;
 			}
 			.btn-strava {
 				background-color: #fc4c02;
 			}
-			.ranking-nav {
-				margin: 20px 0;
+			.btn-ranking {
+				background-color: #007bff;
 			}
-			.ranking-nav .btn {
-				margin: 0 5px;
+			.btn-admin {
+				background-color: #6c757d;
 			}
 			.leaderboard-container {
 				text-align: left;
 				margin: 20px auto;
 				max-width: 1000px;
+				width: 90%;
 			}
 			.leaderboard-container h3 {
 				border-bottom: 2px solid #ccc;
@@ -76,7 +148,7 @@
 			.leaderboard-header {
 				display: flex;
 				justify-content: space-between;
-				align-items: flex-end;
+				align-items: center;
 				position: relative;
 			}
 			.print-btn,
@@ -178,7 +250,7 @@
 			.transition-details {
 				text-align: center;
 				margin-top: 10px;
-				grid-column: 1 / -1; /* Ocupa todas as 3 colunas */
+				grid-column: 1 / -1;
 				padding: 10px;
 				border: 1px solid #ccc;
 				border-radius: 8px;
@@ -234,82 +306,154 @@
 				color: black;
 				text-decoration: none;
 			}
+
+			@media (max-width: 768px) {
+				.app-header {
+					flex-wrap: wrap;
+				}
+				.header-left {
+					width: 100%;
+					justify-content: space-between;
+					gap: 0;
+				}
+				.header-right {
+					flex-direction: column;
+					position: absolute;
+					top: 50px;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+					display: none;
+					padding: 10px 0;
+					z-index: 99;
+				}
+				.header-right.active {
+					display: flex;
+				}
+				.header-menu-links {
+					flex-direction: column;
+					width: 100%;
+					align-items: center;
+					gap: 5px;
+				}
+				.header-menu-links a {
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
+				}
+				.user-info {
+					width: 100%;
+					padding: 10px 0;
+					justify-content: center;
+					margin-left: 0;
+					border-top: 1px solid #eee;
+					margin-top: 10px;
+				}
+				.hamburger {
+					display: block;
+				}
+			}
 		</style>
 	</head>
 	<body>
-		<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
-		<h1>2ª Etapa - Simulado BTS</h1>
-		<div class="leaderboard-container">
-			<div class="tabs-container">
-				<button class="tab-btn active" id="combinedRankingBtn">
-					Ranking Geral
-				</button>
-				<button class="tab-btn" id="cyclingRankingBtn">Ciclismo 🚲</button>
-				<button class="tab-btn" id="runningRankingBtn">Corrida 🏃‍♂️</button>
-				<button class="tab-btn" id="swimmingRankingBtn">Natação 🏊‍♀️</button>
+		<header class="app-header">
+			<div class="header-left">
+				<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+				<div class="header-menu-links" id="header-menu">
+					<a href="/ranking.html">Ver Ranking</a>
+					<a href="/admin.html">Painel Admin</a>
+					<a href="/stopwatch.html">Cronômetro</a>
+				</div>
 			</div>
-
-			<div class="leaderboard-header">
-				<h3 id="rankingTitle">Ranking Geral (Tempo Total)</h3>
-				<div class="leaderboard-header-buttons">
-					<button class="print-btn" id="printReportBtn">
-						<i class="fa-solid fa-print"></i>
-					</button>
-					<button class="refresh-btn" id="refreshBtn">
-						<i class="fa-solid fa-arrows-rotate"></i>
+			<div class="header-right">
+				<span class="hamburger" id="hamburgerBtn">&#9776;</span>
+				<div id="userInfo" class="user-info" style="display: none">
+					<img
+						id="userPhoto"
+						src="https://via.placeholder.com/30"
+						alt="Foto do Usuário" />
+					<span class="user-name"><span id="userName"></span></span>
+					<button id="disconnectBtn" class="disconnect-icon">
+						<i class="fa-solid fa-power-off"></i>
 					</button>
 				</div>
 			</div>
-			<p
-				id="rankingDateInfo"
-				style="text-align: center; font-style: italic"></p>
+		</header>
 
-			<table class="leaderboard-table">
-				<thead>
-					<tr>
-						<th>Posição</th>
-						<th style="text-align: center">Atleta</th>
-						<th>Tempo Total</th>
-					</tr>
-				</thead>
-				<tbody id="leaderboard-body"></tbody>
-			</table>
-		</div>
+		<div class="main-page">
+			<div class="leaderboard-container">
+				<div class="tabs-container">
+					<button class="tab-btn active" id="combinedRankingBtn">
+						Ranking Geral
+					</button>
+					<button class="tab-btn" id="cyclingRankingBtn">Ciclismo 🚲</button>
+					<button class="tab-btn" id="runningRankingBtn">Corrida 🏃‍♂️</button>
+					<button class="tab-btn" id="swimmingRankingBtn">Natação 🏊‍♀️</button>
+				</div>
 
-		<div id="reportModal" class="report-modal">
-			<div class="report-modal-content">
-				<div
-					style="
-						display: flex;
-						justify-content: space-between;
-						align-items: center;
-					">
-					<h3>Relatório de Ranking</h3>
-					<div>
-						<button class="btn print-btn" id="exportToExcelBtn">
-							<i class="fa-solid fa-file-excel"></i>
+				<div class="leaderboard-header">
+					<h3 id="rankingTitle">Ranking Geral (Tempo Total)</h3>
+					<div class="leaderboard-header-buttons">
+						<button class="print-btn" id="printReportBtn">
+							<i class="fa-solid fa-print"></i>
 						</button>
-						<span class="report-close-btn" id="closeReportBtn">&times;</span>
+						<button class="refresh-btn" id="refreshBtn">
+							<i class="fa-solid fa-arrows-rotate"></i>
+						</button>
 					</div>
 				</div>
-				<p id="reportDateInfo" style="font-style: italic"></p>
-				<table class="report-table">
+				<p
+					id="rankingDateInfo"
+					style="text-align: center; font-style: italic"></p>
+
+				<table class="leaderboard-table">
 					<thead>
 						<tr>
 							<th>Posição</th>
-							<th>Atleta</th>
-							<th>Hora Início</th>
+							<th style="text-align: center">Atleta</th>
 							<th>Tempo Total</th>
-							<th>Total Natação</th>
-							<th>Total Ciclismo</th>
-							<th>Total Corrida</th>
 						</tr>
 					</thead>
-					<tbody id="reportTableBody"></tbody>
+					<tbody id="leaderboard-body"></tbody>
 				</table>
 			</div>
+
+			<div id="reportModal" class="report-modal">
+				<div class="report-modal-content">
+					<div
+						style="
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
+						">
+						<h3>Relatório de Ranking</h3>
+						<div>
+							<button class="btn print-btn" id="exportToExcelBtn">
+								<i class="fa-solid fa-file-excel"></i>
+							</button>
+							<span class="report-close-btn" id="closeReportBtn">&times;</span>
+						</div>
+					</div>
+					<p id="reportDateInfo" style="font-style: italic"></p>
+					<table class="report-table">
+						<thead>
+							<tr>
+								<th>Posição</th>
+								<th>Atleta</th>
+								<th>Hora Início</th>
+								<th>Tempo Total</th>
+								<th>Total Natação</th>
+								<th>Total Ciclismo</th>
+								<th>Total Corrida</th>
+							</tr>
+						</thead>
+						<tbody id="reportTableBody"></tbody>
+					</table>
+				</div>
+			</div>
 		</div>
-		<a href="/" class="btn btn-strava">Voltar para a Página Principal</a>
 
 		<script>
 			const leaderboardBody = document.getElementById("leaderboard-body");
@@ -325,9 +469,14 @@
 			const reportTableBody = document.getElementById("reportTableBody");
 			const closeReportBtn = document.getElementById("closeReportBtn");
 			const exportToExcelBtn = document.getElementById("exportToExcelBtn");
+			const hamburgerBtn = document.getElementById("hamburgerBtn");
+			const headerRightContainer = document.getElementById(
+				"header-right-container"
+			);
 
 			let allRankings = {};
 			let currentRankingType = "combined";
+			let currentlyOpenDetailsId = null;
 
 			const formatTime = (seconds) => {
 				if (seconds === 0) return "00:00:00";
@@ -348,14 +497,6 @@
 				const minutes = Math.floor(paceInSecondsPerKm / 60);
 				const seconds = Math.floor(paceInSecondsPerKm % 60);
 				return `${minutes}m ${seconds}s /km`;
-			};
-
-			const formatPaceNatacao = (distance, time) => {
-				if (distance === 0 || time === 0) return "N/A";
-				const paceInSecondsPerKm = (time * 100) / distance;
-				const minutes = Math.floor(paceInSecondsPerKm / 60);
-				const seconds = Math.floor(paceInSecondsPerKm % 60);
-				return `${minutes}m ${seconds}s /100m`;
 			};
 
 			const formatSpeed = (distance, time) => {
@@ -426,7 +567,7 @@
             <div class="sport-details">
               <strong>🏊‍♀️ Natação</strong>
               <p>Tempo: ${formatTime(user.total_swim_time)}</p>
-              <p>Pace: ${formatPaceNatacao(
+              <p>Pace: ${formatPace(
 								user.total_swim_distance,
 								user.total_swim_time
 							)}</p>

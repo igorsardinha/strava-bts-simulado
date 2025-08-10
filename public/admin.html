@@ -5,13 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Painel de Administração</title>
 		<style>
-			#logo {
-				border-radius: 50%;
-				width: 150px;
-				height: 150px;
-				margin-right: 15px;
-				border: 1px solid #ccc;
-			}
 			body {
 				font-family: sans-serif;
 				margin: 20px;
@@ -39,7 +32,8 @@
 				text-align: center;
 			}
 			.controls,
-			.config-section {
+			.config-section,
+			.stopwatch-section {
 				background-color: #f2f2f2;
 				padding: 20px;
 				border-radius: 10px;
@@ -54,18 +48,22 @@
 				margin-right: 15px;
 				margin-bottom: 10px;
 			}
-			.activity-list {
+			.activity-list,
+			.stopwatch-list {
 				width: 100%;
 				border-collapse: collapse;
 				margin-top: 20px;
 			}
 			.activity-list th,
-			.activity-list td {
+			.activity-list td,
+			.stopwatch-list th,
+			.stopwatch-list td {
 				border: 1px solid #ccc;
 				padding: 10px;
 				text-align: left;
 			}
-			.activity-list th {
+			.activity-list th,
+			.stopwatch-list th {
 				background-color: #e0e0e0;
 			}
 			.delete-btn {
@@ -164,10 +162,10 @@
 		</style>
 	</head>
 	<body>
-		<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
-		<h1>2ª Etapa - Simulado BTS</h1>
 		<div class="container">
-			<h2>Painel de Administração</h2>
+			<h1>Painel de Administração</h1>
+			<a href="/" class="btn btn-strava">Voltar para a Página Inicial</a>
+
 			<div id="login-section" class="login-form">
 				<h3>Login de Administrador</h3>
 				<form id="loginForm">
@@ -179,6 +177,8 @@
 			</div>
 
 			<div id="admin-panel" style="display: none">
+				<button id="logoutBtn" class="btn logout-btn">Sair</button>
+
 				<div class="config-section">
 					<h2>Configurar Ranking</h2>
 					<label for="rankingDateInput"
@@ -197,6 +197,24 @@
 							>Considerar tempo de transição no ranking?</label
 						>
 					</div>
+				</div>
+
+				<div id="stopwatch-section" class="stopwatch-section">
+					<h2>Dados do Cronômetro</h2>
+					<button id="deleteAllStopwatchDataBtn" class="delete-all-btn">
+						Excluir Todos os Tempos
+					</button>
+					<table class="stopwatch-list">
+						<thead>
+							<tr>
+								<th>Bateria</th>
+								<th>Tempo (h:m:s)</th>
+								<th>Início</th>
+								<th>Término</th>
+							</tr>
+						</thead>
+						<tbody id="stopwatchTableBody"></tbody>
+					</table>
 				</div>
 
 				<div class="controls">
@@ -262,7 +280,6 @@
 				</form>
 			</div>
 		</div>
-		<button id="logoutBtn" class="btn logout-btn">Sair</button>
 
 		<script>
 			const loginSection = document.getElementById("login-section");
@@ -292,6 +309,10 @@
 			);
 			const considerTransitionCheckbox =
 				document.getElementById("considerTransition");
+			const stopwatchTableBody = document.getElementById("stopwatchTableBody");
+			const deleteAllStopwatchDataBtn = document.getElementById(
+				"deleteAllStopwatchDataBtn"
+			);
 
 			const formatTime = (seconds) => {
 				if (seconds === 0) return "00:00:00";
@@ -305,6 +326,22 @@
 				return `${h}:${m}:${s}`;
 			};
 
+			const formatTimeMs = (ms) => {
+				let totalSeconds = Math.floor(ms / 1000);
+				let totalMinutes = Math.floor(totalSeconds / 60);
+				let totalHours = Math.floor(totalMinutes / 60);
+
+				let displayHours = String(totalHours).padStart(2, "0");
+				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
+				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
+				let displayMilliseconds = String(Math.floor((ms % 1000) / 10)).padStart(
+					2,
+					"0"
+				);
+
+				return `${displayHours}:${displayMinutes}:${displaySeconds}:${displayMilliseconds}`;
+			};
+
 			const checkLoginStatus = async () => {
 				try {
 					const response = await fetch("/api/admin/status");
@@ -315,6 +352,7 @@
 						loadRankingConfig();
 						fetchUsers();
 						fetchActivities();
+						fetchStopwatchData();
 					} else {
 						loginSection.style.display = "block";
 						adminPanel.style.display = "none";
@@ -324,7 +362,6 @@
 				}
 			};
 
-			// NOVO: Função para carregar as configurações do ranking
 			const loadRankingConfig = async () => {
 				try {
 					const response = await fetch("/api/admin/config/ranking-date");
@@ -336,6 +373,83 @@
 					}
 				} catch (error) {
 					console.error("Erro ao carregar configurações do ranking:", error);
+				}
+			};
+
+			const fetchStopwatchData = async () => {
+				try {
+					const response = await fetch("/api/admin/stopwatch-data");
+					if (response.ok) {
+						const data = await response.json();
+						displayStopwatchData(data);
+					} else {
+						stopwatchTableBody.innerHTML =
+							'<tr><td colspan="4">Erro ao carregar dados do cronômetro.</td></tr>';
+					}
+				} catch (error) {
+					console.error("Erro ao buscar dados do cronômetro:", error);
+					stopwatchTableBody.innerHTML =
+						'<tr><td colspan="4">Erro de rede ao carregar dados.</td></tr>';
+				}
+			};
+
+			const displayStopwatchData = (data) => {
+				stopwatchTableBody.innerHTML = "";
+				if (data.length === 0) {
+					stopwatchTableBody.innerHTML =
+						'<tr><td colspan="4">Nenhum dado de cronômetro encontrado.</td></tr>';
+					return;
+				}
+				data.forEach((session) => {
+					const laps = session.laps;
+
+					if (laps && laps.length > 0) {
+						laps.forEach((lap) => {
+							const lapTime = lap.stopTime
+								? formatTimeMs(
+										new Date(lap.stopTime).getTime() -
+											new Date(lap.realStartTime).getTime()
+								  )
+								: "Em andamento";
+							const startTime = new Date(
+								lap.realStartTime
+							).toLocaleTimeString();
+							const stopTime = lap.stopTime
+								? new Date(lap.stopTime).toLocaleTimeString()
+								: "N/A";
+
+							const row = stopwatchTableBody.insertRow();
+							row.innerHTML = `
+                                <td>${lap.id}</td>
+                                <td>${lapTime}</td>
+                                <td>${startTime}</td>
+                                <td>${stopTime}</td>
+                            `;
+						});
+					}
+				});
+			};
+
+			const deleteAllStopwatchData = async () => {
+				if (
+					confirm(
+						"Tem certeza que deseja excluir todos os dados do cronômetro? Esta ação não pode ser desfeita!"
+					)
+				) {
+					try {
+						const response = await fetch("/api/admin/stopwatch-data/all", {
+							method: "DELETE",
+						});
+						if (response.ok) {
+							alert("Dados do cronômetro excluídos com sucesso!");
+							fetchStopwatchData();
+						} else {
+							alert("Erro ao excluir dados.");
+						}
+					} catch (error) {
+						console.error("Erro ao excluir dados do cronômetro:", error);
+						alert("Erro ao excluir dados.");
+					}
 				}
 			};
 
@@ -604,6 +718,10 @@
 			saveRankingConfigBtn.addEventListener("click", saveRankingConfig);
 			removeRankingFilterBtn.addEventListener("click", removeRankingFilter);
 			deleteAllActivitiesBtn.addEventListener("click", deleteAllActivities);
+			deleteAllStopwatchDataBtn.addEventListener(
+				"click",
+				deleteAllStopwatchData
+			);
 
 			checkLoginStatus();
 		</script>

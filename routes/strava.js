@@ -14,7 +14,13 @@ const readDb = async () => {
 		const data = await fs.readFile(dbPath, "utf8");
 		const db = JSON.parse(data);
 		if (!db || !Array.isArray(db.users)) {
-			return { users: [], activities: [], config: {} };
+			return {
+				users: [],
+				activities: [],
+				config: {},
+				stopwatchData: [],
+				realTimeStopwatch: {},
+			};
 		}
 		if (!Array.isArray(db.activities)) {
 			db.activities = [];
@@ -22,13 +28,25 @@ const readDb = async () => {
 		if (!db.config) {
 			db.config = {};
 		}
+		if (!db.stopwatchData) {
+			db.stopwatchData = [];
+		}
+		if (!db.realTimeStopwatch) {
+			db.realTimeStopwatch = {};
+		}
 		return db;
 	} catch (error) {
 		if (error.code === "ENOENT" || error instanceof SyntaxError) {
 			console.log(
 				"Arquivo db.json não encontrado ou inválido. Criando um novo."
 			);
-			return { users: [], activities: [], config: {} };
+			return {
+				users: [],
+				activities: [],
+				config: {},
+				stopwatchData: [],
+				realTimeStopwatch: {},
+			};
 		}
 		console.error("Erro ao ler db.json:", error);
 		return { users: [], activities: [] };
@@ -50,6 +68,58 @@ const getActiveUser = async (req) => {
 	}
 	return null;
 };
+
+router.post("/stopwatch/reset", async (req, res) => {
+	let db = await readDb();
+	db.realTimeStopwatch = {};
+	await saveDb(db);
+	res.status(200).json({ message: "Cronômetro zerado com sucesso." });
+});
+
+router.post("/stopwatch/real-time-state", async (req, res) => {
+	const db = await readDb();
+	const activeUser = await getActiveUser(req);
+	if (activeUser) {
+		db.realTimeStopwatch = {
+			userId: activeUser.id,
+			elapsedTime: req.body.elapsedTime,
+			isRunning: req.body.isRunning,
+			laps: req.body.laps,
+			lastSaved: Date.now(),
+		};
+		await saveDb(db);
+		res
+			.status(200)
+			.json({ message: "Estado em tempo real salvo com sucesso." });
+	} else {
+		res.status(401).json({ message: "Nenhum usuário ativo para salvar." });
+	}
+});
+
+router.get("/stopwatch/real-time-state", async (req, res) => {
+	const db = await readDb();
+	if (db.realTimeStopwatch && db.realTimeStopwatch.elapsedTime !== undefined) {
+		res.json(db.realTimeStopwatch);
+	} else {
+		res.status(404).json({ message: "Nenhum cronômetro ativo." });
+	}
+});
+
+router.post("/stopwatch/save", async (req, res) => {
+	const stopwatchData = req.body;
+	let db = await readDb();
+
+	if (req.session.userId) {
+		stopwatchData.userId = req.session.userId;
+		db.stopwatchData.push(stopwatchData);
+		await saveDb(db);
+		res
+			.status(200)
+			.json({ message: "Dados do cronômetro salvos com sucesso." });
+	} else {
+		res.status(401).json({ message: "Nenhum usuário ativo na sessão." });
+	}
+});
 
 router.get("/status", async (req, res) => {
 	const activeUser = await getActiveUser(req);
@@ -196,7 +266,7 @@ router.get("/leaderboard", async (req, res) => {
 		running: runningRanking,
 		swimming: swimmingRanking,
 		config: db.config.rankingDate,
-		considerTransition: db.config.considerTransition || false, // NOVO: Retorna a flag
+		considerTransition: db.config.considerTransition || false,
 	});
 });
 
@@ -227,7 +297,7 @@ router.get("/update-all-activities", async (req, res) => {
 							Authorization: `Bearer ${user.access_token}`,
 						},
 						params: {
-							per_page: 20,
+							per_page: 200,
 						},
 					}
 				);
@@ -275,7 +345,7 @@ router.get("/disconnect", async (req, res) => {
 });
 
 router.get("/auth", (req, res) => {
-	req.session.destroy();
+	// CORRIGIDO: Não destrói a sessão aqui
 	const scope = "read,activity:read_all";
 	const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${stravaClientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}`;
 	res.redirect(stravaAuthUrl);
@@ -388,10 +458,12 @@ router.get("/activities", async (req, res) => {
 			"Erro ao buscar atividades:",
 			error.response?.data || error.message
 		);
-		res.status(500).json({
-			message:
-				"Erro ao buscar as atividades do atleta. O token pode ter expirado ou o escopo não foi suficiente.",
-		});
+		res
+			.status(500)
+			.json({
+				message:
+					"Erro ao buscar as atividades do atleta. O token pode ter expirado ou o escopo não foi suficiente.",
+			});
 	}
 });
 

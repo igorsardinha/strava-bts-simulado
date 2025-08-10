@@ -1,0 +1,261 @@
+body {
+	font-family: sans-serif;
+	text-align: center;
+	margin: 0;
+	padding-top: 70px;
+	background-color: #f4f4f4;
+}
+#logo {
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	border: 1px solid #ccc;
+}
+.app-header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	background-color: #fff;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	padding: 10px 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	z-index: 100;
+}
+.header-left {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+.header-menu-links {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.header-menu-links a {
+	text-decoration: none;
+	color: #333;
+	padding: 5px 10px;
+	border-radius: 5px;
+	transition: background-color 0.3s;
+}
+.header-menu-links a:hover {
+	background-color: #f2f2f2;
+}
+.header-right {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	margin-right: 5%;
+}
+.hamburger {
+	display: none;
+	font-size: 1.5em;
+	cursor: pointer;
+	margin-right: 5%;
+}
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.user-info img {
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	border: 1px solid #ccc;
+	object-fit: cover;
+}
+.user-info .user-name {
+	font-size: 1em;
+	margin: 0;
+}
+.disconnect-icon {
+	background-color: transparent;
+	border: none;
+	color: #f44336;
+	font-size: 1.2em;
+	cursor: pointer;
+	padding: 5px;
+}
+.disconnect-icon:hover {
+	color: #d32f2f;
+}
+.btn {
+	color: white;
+	padding: 10px 20px;
+	text-decoration: none;
+	border-radius: 5px;
+	font-size: 1em;
+	border: none;
+	cursor: pointer;
+	display: inline-block;
+	margin: 5px;
+}
+.btn-strava {
+	background-color: #fc4c02;
+}
+.btn-ranking {
+	background-color: #007bff;
+}
+.btn-admin {
+	background-color: #6c757d;
+}
+.activity-list {
+	text-align: left;
+	margin: 20px auto;
+	max-width: 800px;
+	width: 90%;
+}
+.activity-list h3 {
+	border-bottom: 2px solid #ccc;
+	padding-bottom: 5px;
+}
+.activity-item {
+	border: 1px solid #eee;
+	padding: 10px;
+	margin-bottom: 5px;
+	border-radius: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	cursor: pointer;
+	position: relative;
+}
+.activity-item.inactive-activity {
+	opacity: 0.6;
+	background-color: #f9f9f9;
+	cursor: pointer;
+}
+.activity-item.inactive-activity::after {
+	content: "DESCONSIDERADA";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 0.9em;
+	color: #f44336;
+	font-weight: bold;
+	background-color: rgba(255, 255, 255, 0.8);
+	padding: 5px 10px;
+	border-radius: 5px;
+}
+.activity-info {
+	display: flex;
+	align-items: center;
+}
+.activity-emoji {
+	font-size: 1.5em;
+	margin-right: 10px;
+}
+#liveStopwatchContainer {
+	margin-top: 20px;
+	padding: 15px;
+	background-color: #f2f2f2;
+	border-radius: 10px;
+	max-width: 800px;
+	margin: 20px auto;
+}
+#liveStopwatchDisplay {
+	font-size: 2.5em;
+	font-weight: bold;
+	color: #28a745;
+}
+#liveStopwatchStatus {
+	font-size: 0.9em;
+	color: #555;
+}
+.connect-btn-container {
+	margin-top: 20px;
+}
+.activity-details-panel {
+	padding: 15px;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	text-align: left;
+}
+.detail-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #eee;
+}
+.detail-item:last-child {
+	border-bottom: none;
+}
+.detail-item .label {
+	font-weight: bold;
+	width: 120px;
+	text-align: left;
+}
+.detail-item .value {
+	text-align: left;
+}
+.detail-item .icon {
+	margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+	.app-header {
+		flex-wrap: wrap;
+		padding: 10px;
+	}
+	.header-left {
+		width: 100%;
+		justify-content: space-between;
+		gap: 0;
+	}
+	.header-menu-links {
+		display: none;
+		flex-direction: column;
+		position: absolute;
+		top: 50px;
+		left: 0;
+		width: 100%;
+		background-color: #fff;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		padding: 10px 0;
+		align-items: center;
+		margin-left: 0;
+		z-index: 99;
+	}
+	.header-menu-links a {
+		padding: 10px;
+		width: 100%;
+		text-align: center;
+		box-sizing: border-box;
+		margin: 5px 0;
+	}
+	.header-menu-links.active {
+		display: flex;
+	}
+	.header-right {
+		display: none;
+		width: 100%;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 10px 0;
+		margin-left: 0;
+	}
+	.header-right.active {
+		display: flex;
+	}
+	.user-info {
+		width: 100%;
+		padding: 10px 0;
+		justify-content: center;
+		border-top: 1px solid #eee;
+		margin-top: 10px;
+	}
+	.hamburger {
+		display: block;
+	}
+}

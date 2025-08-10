@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Cronômetro de Baterias</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+		<style>
+			body {
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				text-align: center;
+				margin: 0;
+				padding-top: 70px;
+				background-color: #f8f9fa;
+				color: #343a40;
+			}
+			#logo {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+			}
+			.app-header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				background-color: #fff;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				padding: 10px 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				z-index: 100;
+			}
+			.header-left {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-right {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-menu-links {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.header-menu-links a {
+				text-decoration: none;
+				color: #333;
+				padding: 5px 10px;
+				border-radius: 5px;
+				transition: background-color 0.3s;
+			}
+			.header-menu-links a:hover {
+				background-color: #f2f2f2;
+			}
+			.hamburger {
+				display: none;
+				font-size: 1.5em;
+				cursor: pointer;
+			}
+			.user-info {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.user-info img {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+				object-fit: cover;
+			}
+			.user-info .user-name {
+				font-size: 1em;
+				margin: 0;
+			}
+			.disconnect-icon {
+				background-color: transparent;
+				border: none;
+				color: #f44336;
+				font-size: 1.2em;
+				cursor: pointer;
+				padding: 5px;
+			}
+			.disconnect-icon:hover {
+				color: #d32f2f;
+			}
+			.btn {
+				padding: 15px 30px;
+				font-size: 1.1em;
+				border: none;
+				border-radius: 8px;
+				cursor: pointer;
+				color: white;
+				transition: background-color 0.3s ease;
+				min-width: 150px;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+			}
+			.btn-start {
+				background-color: #28a745;
+			}
+			.btn-stop {
+				background-color: #dc3545;
+			}
+			.btn-reset {
+				background-color: #ffc107;
+				color: #212529;
+			}
+			.btn-lap {
+				background-color: #007bff;
+			}
+			.btn-start:hover {
+				background-color: #218838;
+			}
+			.btn-stop:hover {
+				background-color: #c82333;
+			}
+			.btn-reset:hover {
+				background-color: #e0a800;
+			}
+			.btn-lap:hover {
+				background-color: #0056b3;
+			}
+			.btn:disabled {
+				background-color: #6c757d;
+				cursor: not-allowed;
+				box-shadow: none;
+			}
+			.laps-container {
+				margin-top: 30px;
+				text-align: left;
+				padding: 15px;
+				border: 1px solid #ced4da;
+				border-radius: 8px;
+				background-color: #f8f9fa;
+			}
+			.laps-container h3 {
+				color: #007bff;
+				margin-top: 0;
+				border-bottom: 2px solid #007bff;
+				padding-bottom: 10px;
+				margin-bottom: 15px;
+			}
+			.lap-item {
+				display: flex;
+				justify-content: space-between;
+				padding: 12px 10px;
+				border-bottom: 1px solid #eee;
+				font-size: 1em;
+				align-items: center;
+			}
+			.lap-item:last-child {
+				border-bottom: none;
+			}
+			.lap-info {
+				display: flex;
+				flex-direction: column;
+			}
+			.lap-number {
+				font-weight: bold;
+				color: #495057;
+			}
+			.lap-time {
+				color: #343a40;
+			}
+			.lap-start-time {
+				font-size: 0.8em;
+				color: #6c757d;
+			}
+			.btn-save-container {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-top: 10px;
+				padding-bottom: 10px;
+			}
+			.btn-save {
+				padding: 8px 16px;
+				font-size: 0.9em;
+				background-color: #007bff;
+				color: white;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+			}
+			.btn-save:hover {
+				background-color: #0056b3;
+			}
+			.feedback-message {
+				font-size: 0.9em;
+				font-weight: bold;
+			}
+			.feedback-success {
+				color: #28a745;
+			}
+			.feedback-error {
+				color: #dc3545;
+			}
+			.main-content {
+				max-width: 800px;
+				margin: auto;
+				padding: 20px;
+			}
+			.display {
+				font-size: 6em;
+				font-weight: bold;
+				margin-bottom: 30px;
+				color: #0056b3;
+				display: flex;
+				gap: 5px;
+				justify-content: center;
+			}
+			.display-part {
+				background-color: #f0f0f0;
+				color: #333;
+				padding: 10px 15px;
+				border-radius: 5px;
+				min-width: 50px;
+				text-align: center;
+			}
+			@media (max-width: 768px) {
+				.display {
+					font-size: 3em;
+					font-weight: bold;
+					margin-bottom: 30px;
+					color: #0056b3;
+					display: flex;
+					gap: 2px;
+					justify-content: center;
+				}
+				.display-part {
+					background-color: #f0f0f0;
+					color: #333;
+					padding: 5px 8px;
+					border-radius: 5px;
+					min-width: 30px;
+					text-align: center;
+				}
+
+				.app-header {
+					flex-wrap: wrap;
+					padding: 10px;
+				}
+				.header-left {
+					width: 100%;
+					justify-content: space-between;
+					gap: 0;
+				}
+				.header-right {
+					flex-direction: column;
+					position: absolute;
+					top: 50px;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+					display: none;
+					padding: 10px 0;
+					z-index: 99;
+				}
+				.header-right.active {
+					display: flex;
+				}
+				.header-menu-links {
+					flex-direction: column;
+					width: 100%;
+					align-items: center;
+					gap: 5px;
+				}
+				.header-menu-links a {
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
+				}
+				.user-info {
+					width: 100%;
+					padding: 10px 0;
+					justify-content: center;
+					margin-left: 0;
+					border-top: 1px solid #eee;
+					margin-top: 10px;
+				}
+				.hamburger {
+					display: block;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="app-header">
+			<div class="header-left">
+				<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+				<span class="hamburger" id="hamburgerBtn">&#9776;</span>
+			</div>
+			<div class="header-right" id="header-right-container">
+				<div class="header-menu-links" id="header-menu">
+					<a href="/ranking.html">Ver Ranking</a>
+					<a href="/admin.html">Painel Admin</a>
+					<a
+						href="/stopwatch.html"
+						style="background-color: #fc4c02; color: white"
+						>Cronômetro</a
+					>
+				</div>
+				<div id="userInfo" class="user-info" style="display: none">
+					<img
+						id="userPhoto"
+						src="https://via.placeholder.com/30"
+						alt="Foto do Usuário" />
+					<span class="user-name"><span id="userName"></span></span>
+					<button id="disconnectBtn" class="disconnect-icon">
+						<i class="fa-solid fa-power-off"></i>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<div class="main-content">
+			<div class="container">
+				<h1>Cronômetro de Baterias</h1>
+				<div id="mainDisplay" class="display">00:00:00:00</div>
+
+				<div class="buttons">
+					<button id="startBtn" class="btn btn-start">
+						<i class="fa-solid fa-play"></i> Iniciar
+					</button>
+					<button id="stopBtn" class="btn btn-stop" disabled>
+						<i class="fa-solid fa-pause"></i> Parar
+					</button>
+					<button id="resetBtn" class="btn btn-reset" disabled>
+						<i class="fa-solid fa-rotate-left"></i> Zerar
+					</button>
+					<button id="lapBtn" class="btn btn-lap" disabled>
+						<i class="fa-solid fa-flag-checkered"></i> Iniciar Nova Bateria
+					</button>
+				</div>
+
+				<div class="laps-container">
+					<h3>Baterias</h3>
+					<div id="lapsList"></div>
+					<div class="btn-save-container">
+						<span id="feedbackMessage" class="feedback-message"></span>
+						<button id="saveBtn" class="btn-save" disabled>
+							<i class="fa-solid fa-save"></i> Salvar Dados
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const mainDisplay = document.getElementById("mainDisplay");
+			const startBtn = document.getElementById("startBtn");
+			const stopBtn = document.getElementById("stopBtn");
+			const resetBtn = document.getElementById("resetBtn");
+			const lapBtn = document.getElementById("lapBtn");
+			const lapsList = document.getElementById("lapsList");
+			const saveBtn = document.getElementById("saveBtn");
+			const feedbackMessage = document.getElementById("feedbackMessage");
+			const hamburgerBtn = document.getElementById("hamburgerBtn");
+			const headerRightContainer = document.getElementById(
+				"header-right-container"
+			);
+			const userInfoDiv = document.getElementById("userInfo");
+
+			let isRunning = false;
+			let startTime = 0;
+			let elapsedTime = 0;
+			let timerInterval = null;
+			let lapNumber = 0;
+			let laps = [];
+			let realTimeSyncInterval = null;
+
+			const formatTime = (ms) => {
+				let totalSeconds = Math.floor(ms / 1000);
+				let totalMinutes = Math.floor(totalSeconds / 60);
+				let totalHours = Math.floor(totalMinutes / 60);
+
+				let displayHours = String(totalHours).padStart(2, "0");
+				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
+				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
+				let displayMilliseconds = String(Math.floor((ms % 1000) / 10)).padStart(
+					2,
+					"0"
+				);
+
+				return `
+            <span class="display-part">${displayHours}</span>:<span class="display-part">${displayMinutes}</span>:<span class="display-part">${displaySeconds}</span>:<span class="display-part">${displayMilliseconds}</span>
+        `;
+			};
+
+			const formatRealTime = (date) => {
+				const h = String(date.getHours()).padStart(2, "0");
+				const m = String(date.getMinutes()).padStart(2, "0");
+				const s = String(date.getSeconds()).padStart(2, "0");
+				return `${h}:${m}:${s}`;
+			};
+
+			const saveRealTimeState = async () => {
+				const state = {
+					elapsedTime: elapsedTime,
+					isRunning: isRunning,
+					laps: laps,
+					lastSaved: Date.now(),
+				};
+				try {
+					await fetch("/api/strava/stopwatch/real-time-state", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(state),
+					});
+				} catch (error) {
+					console.error("Erro ao salvar estado em tempo real:", error);
+				}
+			};
+
+			const updateDisplay = () => {
+				elapsedTime = Date.now() - startTime;
+				mainDisplay.innerHTML = formatTime(elapsedTime);
+
+				laps.forEach((lap) => {
+					const lapElement = document.getElementById(`lap-${lap.id}`);
+					if (lapElement) {
+						const lapTimeElement = lapElement.querySelector(".lap-time");
+						const currentLapTime = lap.stopTime
+							? new Date(lap.stopTime).getTime() -
+							  new Date(lap.realStartTime).getTime()
+							: elapsedTime - lap.lapStartTime;
+						lapTimeElement.textContent = formatTime(currentLapTime);
+					}
+				});
+				saveState();
+			};
+
+			const startStopwatch = () => {
+				if (!isRunning) {
+					isRunning = true;
+					startTime = Date.now() - elapsedTime;
+					timerInterval = setInterval(updateDisplay, 10);
+					realTimeSyncInterval = setInterval(saveRealTimeState, 1000);
+					startBtn.disabled = true;
+					stopBtn.disabled = false;
+					resetBtn.disabled = false;
+					lapBtn.disabled = false;
+					saveBtn.disabled = true;
+
+					if (laps.length === 0) {
+						addLap();
+					}
+
+					laps.forEach((lap) => {
+						const lapElement = document.getElementById(`lap-${lap.id}`);
+						if (lapElement && !lap.stopTime) {
+							lapElement.querySelector(".lap-control-btn").disabled = false;
+						}
+					});
+					saveState();
+				}
+			};
+
+			const stopStopwatch = () => {
+				if (isRunning) {
+					isRunning = false;
+					clearInterval(timerInterval);
+					clearInterval(realTimeSyncInterval);
+
+					laps.forEach((lap) => {
+						if (!lap.stopTime) {
+							lap.stopTime = new Date().toISOString();
+						}
+						const lapElement = document.getElementById(`lap-${lap.id}`);
+						if (lapElement) {
+							lapElement.querySelector(".lap-control-btn").disabled = true;
+						}
+					});
+					saveBtn.disabled = false;
+					saveState();
+				}
+			};
+
+			const resetStopwatch = async () => {
+				stopStopwatch();
+				elapsedTime = 0;
+				lapNumber = 0;
+				laps = [];
+				mainDisplay.innerHTML = formatTime(elapsedTime);
+				lapsList.innerHTML = "";
+				resetBtn.disabled = true;
+				lapBtn.disabled = true;
+				saveBtn.disabled = true;
+				localStorage.removeItem("stopwatchState");
+
+				try {
+					await fetch("/api/strava/stopwatch/reset", {
+						method: "POST",
+					});
+					console.log("Cronômetro zerado no servidor.");
+				} catch (error) {
+					console.error("Erro ao zerar o cronômetro no servidor:", error);
+				}
+			};
+
+			const addLap = () => {
+				if (laps.length > 0) {
+					const lastLap = laps[laps.length - 1];
+					if (!lastLap.stopTime) {
+						const lastLapBtn = document
+							.getElementById(`lap-${lastLap.id}`)
+							.querySelector(".lap-control-btn");
+						if (lastLapBtn) {
+							stopLapTimer({ currentTarget: lastLapBtn });
+						}
+					}
+				}
+
+				lapNumber++;
+				const lapStartTime = elapsedTime;
+				const realStartTime = new Date();
+
+				const lapItem = document.createElement("div");
+				lapItem.className = "lap-item";
+				lapItem.id = `lap-${lapNumber}`;
+				lapItem.innerHTML = `
+            <div class="lap-info">
+                <span class="lap-number">Bateria ${lapNumber}:</span>
+                <span class="lap-start-time">Início às: ${formatRealTime(
+									realStartTime
+								)}</span>
+            </div>
+            <span class="lap-time">${formatTime(0)}</span>
+            <div class="lap-controls">
+              <button class="lap-control-btn btn-stop-lap" data-lap-id="${lapNumber}"><i class="fa-solid fa-stop"></i></button>
+            </div>
+        `;
+
+				lapsList.appendChild(lapItem);
+
+				laps.push({
+					id: lapNumber,
+					lapStartTime: lapStartTime,
+					realStartTime: realStartTime.toISOString(),
+					stopTime: null,
+				});
+
+				lapItem
+					.querySelector(".lap-control-btn")
+					.addEventListener("click", stopLapTimer);
+				saveState();
+			};
+
+			const stopLapTimer = (event) => {
+				const lapId = parseInt(event.currentTarget.getAttribute("data-lap-id"));
+				const lap = laps.find((l) => l.id === lapId);
+
+				if (!lap.stopTime) {
+					lap.stopTime = new Date().toISOString();
+					event.currentTarget.disabled = true;
+					const lapTimeElement = document
+						.getElementById(`lap-${lapId}`)
+						.querySelector(".lap-time");
+					lapTimeElement.textContent = formatTime(
+						new Date(lap.stopTime).getTime() -
+							new Date(lap.realStartTime).getTime()
+					);
+					saveState();
+				}
+			};
+
+			const saveState = () => {
+				const state = {
+					isRunning,
+					startTime,
+					elapsedTime,
+					laps,
+					lapNumber,
+					lastSaved: Date.now(),
+				};
+				localStorage.setItem("stopwatchState", JSON.stringify(state));
+				saveRealTimeState();
+			};
+
+			const loadState = () => {
+				const savedState = localStorage.getItem("stopwatchState");
+				if (savedState) {
+					const state = JSON.parse(savedState);
+
+					isRunning = state.isRunning;
+					elapsedTime = state.elapsedTime;
+					lapNumber = state.lapNumber;
+					laps = state.laps;
+
+					if (isRunning) {
+						const timeElapsedSinceSave = Date.now() - state.lastSaved;
+						elapsedTime += timeElapsedSinceSave;
+						timerInterval = setInterval(updateDisplay, 10);
+						realTimeSyncInterval = setInterval(saveRealTimeState, 1000);
+					}
+
+					startTime = Date.now() - elapsedTime;
+
+					mainDisplay.innerHTML = formatTime(elapsedTime);
+					lapsList.innerHTML = "";
+					laps.forEach((lap) => {
+						const lapItem = document.createElement("div");
+						lapItem.className = "lap-item";
+						lapItem.id = `lap-${lap.id}`;
+						lapItem.innerHTML = `
+                    <div class="lap-info">
+                        <span class="lap-number">Bateria ${lap.id}:</span>
+                        <span class="lap-start-time">Início às: ${formatRealTime(
+													new Date(lap.realStartTime)
+												)}</span>
+                    </div>
+                    <span class="lap-time">${
+											lap.stopTime
+												? formatTime(
+														new Date(lap.stopTime).getTime() -
+															new Date(lap.realStartTime).getTime()
+												  )
+												: formatTime(elapsedTime - lap.lapStartTime)
+										}</span>
+                    <div class="lap-controls">
+                        <button class="lap-control-btn btn-stop-lap" data-lap-id="${
+													lap.id
+												}" ${lap.stopTime ? "disabled" : ""}>
+                            <i class="fa-solid fa-stop"></i>
+                        </button>
+                    </div>
+                `;
+						lapItem
+							.querySelector(".lap-control-btn")
+							.addEventListener("click", stopLapTimer);
+						lapsList.appendChild(lapItem);
+					});
+
+					startBtn.disabled = isRunning;
+					stopBtn.disabled = !isRunning;
+					resetBtn.disabled = false;
+					lapBtn.disabled = !isRunning;
+					saveBtn.disabled = isRunning;
+				} else {
+					resetStopwatch();
+				}
+			};
+
+			const saveStopwatchData = async () => {
+				if (laps.length === 0) {
+					showFeedback("Não há dados para salvar.", "error");
+					return;
+				}
+
+				const originalButtonContent = saveBtn.innerHTML;
+				const originalButtonDisabled = saveBtn.disabled;
+				saveBtn.innerHTML =
+					'<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+				saveBtn.disabled = true;
+
+				try {
+					const dataToSave = {
+						totalElapsedTime: elapsedTime,
+						laps: laps,
+					};
+					const response = await fetch("/api/strava/stopwatch/save", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(dataToSave),
+					});
+					if (response.ok) {
+						showFeedback("Dados salvos!", "success");
+						saveBtn.disabled = true;
+					} else {
+						showFeedback("Erro ao salvar!", "error");
+					}
+				} catch (error) {
+					console.error("Erro ao salvar dados do cronômetro:", error);
+					showFeedback("Erro ao salvar!", "error");
+				} finally {
+					setTimeout(() => {
+						saveBtn.innerHTML = originalButtonContent;
+						saveBtn.disabled = originalButtonDisabled;
+						feedbackMessage.textContent = "";
+					}, 3000);
+				}
+			};
+
+			function showFeedback(message, type) {
+				feedbackMessage.textContent = message;
+				feedbackMessage.className = `feedback-message feedback-${type}`;
+			}
+
+			startBtn.addEventListener("click", startStopwatch);
+			stopBtn.addEventListener("click", stopStopwatch);
+			resetBtn.addEventListener("click", resetStopwatch);
+			lapBtn.addEventListener("click", addLap);
+			saveBtn.addEventListener("click", saveStopwatchData);
+
+			loadState();
+			hamburgerBtn.addEventListener("click", () => {
+				headerRightContainer.classList.toggle("active");
+			});
+
+			window.addEventListener("resize", () => {
+				if (window.innerWidth > 768) {
+					headerRightContainer.classList.remove("active");
+				}
+			});
+
+			// Inicia a verificação de status do login
+			checkStatus();
+			loadUserInfo();
+		</script>
+	</body>
+</html>

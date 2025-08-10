@@ -19,7 +19,7 @@ const readDb = async () => {
 		const data = await fs.readFile(dbPath, "utf8");
 		const db = JSON.parse(data);
 		if (!db || !Array.isArray(db.users)) {
-			return { users: [], activities: [], config: {} };
+			return { users: [], activities: [], config: {}, stopwatchData: [] };
 		}
 		if (!Array.isArray(db.activities)) {
 			db.activities = [];
@@ -27,13 +27,16 @@ const readDb = async () => {
 		if (!db.config) {
 			db.config = {};
 		}
+		if (!db.stopwatchData) {
+			db.stopwatchData = [];
+		}
 		return db;
 	} catch (error) {
 		if (error.code === "ENOENT" || error instanceof SyntaxError) {
 			console.log(
 				"Arquivo db.json não encontrado ou inválido. Criando um novo."
 			);
-			return { users: [], activities: [], config: {} };
+			return { users: [], activities: [], config: {}, stopwatchData: [] };
 		}
 		console.error("Erro ao ler db.json:", error);
 		return { users: [], activities: [] };
@@ -73,15 +76,6 @@ router.get("/status", (req, res) => {
 
 router.use(isAuthenticated);
 
-// NOVO: Endpoint para buscar a configuração atual do ranking
-router.get("/config/ranking-date", async (req, res) => {
-	const db = await readDb();
-	res.json({
-		date: db.config.rankingDate || null,
-		considerTransition: db.config.considerTransition || false,
-	});
-});
-
 router.post("/config/ranking-date", async (req, res) => {
 	const { date, considerTransition } = req.body;
 	const db = await readDb();
@@ -96,6 +90,31 @@ router.delete("/config/ranking-date", async (req, res) => {
 	delete db.config.rankingDate;
 	await saveDb(db);
 	res.status(200).json({ message: "Filtro de data removido com sucesso." });
+});
+
+// Endpoint para buscar dados do cronômetro
+router.get("/stopwatch-data", async (req, res) => {
+	const db = await readDb();
+	const stopwatchDataWithUser = db.stopwatchData.map((data) => {
+		const user = db.users.find((u) => u.id === data.userId);
+		return {
+			...data,
+			userName: user ? user.name : "Usuário Desconhecido",
+		};
+	});
+	res.json(stopwatchDataWithUser);
+});
+
+// Endpoint para excluir todos os dados do cronômetro
+router.delete("/stopwatch-data/all", async (req, res) => {
+	let db = await readDb();
+	db.stopwatchData = [];
+	await saveDb(db);
+	res
+		.status(200)
+		.json({
+			message: "Todos os dados do cronômetro foram excluídos com sucesso.",
+		});
 });
 
 router.get("/users", async (req, res) => {
