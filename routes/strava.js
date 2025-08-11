@@ -4,80 +4,60 @@ const fs = require("fs").promises;
 
 const router = express.Router();
 const dbPath = "./db.json";
+const stopwatchDbPath = "./db.stopwatch.json";
 
 const stravaClientId = process.env.STRAVA_CLIENT_ID;
 const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET;
 const redirectUri = "http://localhost:3000/api/strava/callback";
 
-const readDb = async () => {
+const readDb = async (path) => {
 	try {
-		const data = await fs.readFile(dbPath, "utf8");
+		const data = await fs.readFile(path, "utf8");
 		const db = JSON.parse(data);
-		if (!db || !Array.isArray(db.users)) {
-			return {
-				users: [],
-				activities: [],
-				config: {},
-				stopwatchData: [],
-				realTimeStopwatch: {},
-			};
-		}
-		if (!Array.isArray(db.activities)) {
-			db.activities = [];
-		}
-		if (!db.config) {
-			db.config = {};
-		}
-		if (!db.stopwatchData) {
-			db.stopwatchData = [];
-		}
-		if (!db.realTimeStopwatch) {
-			db.realTimeStopwatch = {};
-		}
 		return db;
 	} catch (error) {
 		if (error.code === "ENOENT" || error instanceof SyntaxError) {
 			console.log(
-				"Arquivo db.json não encontrado ou inválido. Criando um novo."
+				`Arquivo ${path} não encontrado ou inválido. Criando um novo.`
 			);
-			return {
-				users: [],
-				activities: [],
-				config: {},
-				stopwatchData: [],
-				realTimeStopwatch: {},
-			};
+			if (path === stopwatchDbPath) {
+				return { stopwatchData: [], realTimeStopwatch: {} };
+			}
+			return { users: [], activities: [], config: {} };
 		}
-		console.error("Erro ao ler db.json:", error);
-		return { users: [], activities: [] };
+		console.error(`Erro ao ler ${path}:`, error);
+		return { users: [], activities: [], config: {} };
 	}
 };
 
-const saveDb = async (data) => {
+const saveDb = async (path, data) => {
 	try {
-		await fs.writeFile(dbPath, JSON.stringify(data, null, 2), "utf8");
+		await fs.writeFile(path, JSON.stringify(data, null, 2), "utf8");
 	} catch (error) {
-		console.error("Erro ao salvar db.json:", error);
+		console.error(`Erro ao salvar ${path}:`, error);
 	}
 };
 
 const getActiveUser = async (req) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	if (req.session.userId) {
 		return db.users.find((user) => user.id === req.session.userId);
 	}
 	return null;
 };
 
+// NOVO: Endpoint para zerar o cronômetro, agora em db.stopwatch.json
 router.post("/stopwatch/reset", async (req, res) => {
-	let db = await readDb();
+	let db = await readDb(stopwatchDbPath);
 	db.realTimeStopwatch = {};
-	await saveDb(db);
+	db.stopwatchData = [];
+	await saveDb(stopwatchDbPath, db);
 	res.status(200).json({ message: "Cronômetro zerado com sucesso." });
 });
 
+// Endpoint para salvar estado do cronômetro em tempo real
 router.post("/stopwatch/real-time-state", async (req, res) => {
-	const db = await readDb();
+	let db = await readDb(stopwatchDbPath);
 	const activeUser = await getActiveUser(req);
 	if (activeUser) {
 		db.realTimeStopwatch = {
@@ -87,7 +67,7 @@ router.post("/stopwatch/real-time-state", async (req, res) => {
 			laps: req.body.laps,
 			lastSaved: Date.now(),
 		};
-		await saveDb(db);
+		await saveDb(stopwatchDbPath, db);
 		res
 			.status(200)
 			.json({ message: "Estado em tempo real salvo com sucesso." });
@@ -97,7 +77,7 @@ router.post("/stopwatch/real-time-state", async (req, res) => {
 });
 
 router.get("/stopwatch/real-time-state", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(stopwatchDbPath);
 	if (db.realTimeStopwatch && db.realTimeStopwatch.elapsedTime !== undefined) {
 		res.json(db.realTimeStopwatch);
 	} else {
@@ -107,12 +87,12 @@ router.get("/stopwatch/real-time-state", async (req, res) => {
 
 router.post("/stopwatch/save", async (req, res) => {
 	const stopwatchData = req.body;
-	let db = await readDb();
+	let db = await readDb(stopwatchDbPath);
 
 	if (req.session.userId) {
 		stopwatchData.userId = req.session.userId;
 		db.stopwatchData.push(stopwatchData);
-		await saveDb(db);
+		await saveDb(stopwatchDbPath, db);
 		res
 			.status(200)
 			.json({ message: "Dados do cronômetro salvos com sucesso." });
@@ -122,7 +102,8 @@ router.post("/stopwatch/save", async (req, res) => {
 });
 
 router.get("/status", async (req, res) => {
-	const activeUser = await getActiveUser(req);
+	const db = await readDb(dbPath);
+	const activeUser = db.users.find((user) => user.id === req.session.userId);
 	if (activeUser) {
 		res.json({ status: "connected" });
 	} else {
@@ -131,11 +112,12 @@ router.get("/status", async (req, res) => {
 });
 
 router.get("/user", async (req, res) => {
-	const activeUser = await getActiveUser(req);
+	const db = await readDb(dbPath);
+	const activeUser = db.users.find((user) => user.id === req.session.userId);
 	if (activeUser) {
 		res.json({
 			name: activeUser.name,
-			profile_photo: activeUser.profile_photo,
+			profile_photo: activeUser.profile_medium,
 		});
 	} else {
 		res.status(404).json({ message: "Nenhum usuário ativo." });
@@ -143,8 +125,8 @@ router.get("/user", async (req, res) => {
 });
 
 router.get("/saved-activities", async (req, res) => {
-	const db = await readDb();
-	const activeUser = await getActiveUser(req);
+	const db = await readDb(dbPath);
+	const activeUser = db.users.find((user) => user.id === req.session.userId);
 	if (activeUser) {
 		const userActivities = db.activities.filter(
 			(activity) => activity.athlete.id === activeUser.id
@@ -156,7 +138,7 @@ router.get("/saved-activities", async (req, res) => {
 });
 
 router.get("/leaderboard", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 
 	let activitiesToRank = db.activities;
 	if (db.config.rankingDate) {
@@ -271,7 +253,7 @@ router.get("/leaderboard", async (req, res) => {
 });
 
 router.get("/activity/:id", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	const foundActivity = db.activities.find(
 		(activity) => activity.id.toString() === req.params.id
 	);
@@ -284,7 +266,7 @@ router.get("/activity/:id", async (req, res) => {
 });
 
 router.get("/update-all-activities", async (req, res) => {
-	let db = await readDb();
+	let db = await readDb(dbPath);
 	const allUsers = db.users;
 
 	for (const user of allUsers) {
@@ -323,7 +305,7 @@ router.get("/update-all-activities", async (req, res) => {
 				db.activities = db.activities
 					.filter((activity) => activity.athlete.id !== user.id)
 					.concat(processedActivities);
-				await saveDb(db);
+				await saveDb(dbPath, db);
 				console.log(`Atividades do usuário ${user.name} atualizadas.`);
 			}
 		} catch (error) {
@@ -345,7 +327,6 @@ router.get("/disconnect", async (req, res) => {
 });
 
 router.get("/auth", (req, res) => {
-	// CORRIGIDO: Não destrói a sessão aqui
 	const scope = "read,activity:read_all";
 	const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${stravaClientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}`;
 	res.redirect(stravaAuthUrl);
@@ -374,7 +355,7 @@ router.get("/callback", async (req, res) => {
 
 		const { access_token, refresh_token, athlete } = response.data;
 
-		let db = await readDb();
+		let db = await readDb(dbPath);
 		const existingUser = db.users.find((u) => u.id === athlete.id);
 
 		if (existingUser) {
@@ -392,7 +373,7 @@ router.get("/callback", async (req, res) => {
 		}
 
 		req.session.userId = athlete.id;
-		await saveDb(db);
+		await saveDb(dbPath, db);
 		res.redirect("/");
 	} catch (error) {
 		console.error(
@@ -404,7 +385,7 @@ router.get("/callback", async (req, res) => {
 });
 
 router.get("/activities", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	const activeUser = await getActiveUser(req);
 
 	if (!activeUser) {
@@ -447,7 +428,7 @@ router.get("/activities", async (req, res) => {
 		db.activities = db.activities
 			.filter((activity) => activity.athlete.id !== activeUser.id)
 			.concat(processedActivities);
-		await saveDb(db);
+		await saveDb(dbPath, db);
 
 		res.json({
 			message: "Atividades obtidas e salvas com sucesso.",

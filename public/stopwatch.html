@@ -38,12 +38,12 @@
 			.header-left {
 				display: flex;
 				align-items: center;
-				gap: 20px;
 			}
 			.header-right {
 				display: flex;
 				align-items: center;
 				gap: 20px;
+				margin-right: 40px;
 			}
 			.header-menu-links {
 				display: flex;
@@ -227,24 +227,6 @@
 				text-align: center;
 			}
 			@media (max-width: 768px) {
-				.display {
-					font-size: 3em;
-					font-weight: bold;
-					margin-bottom: 30px;
-					color: #0056b3;
-					display: flex;
-					gap: 2px;
-					justify-content: center;
-				}
-				.display-part {
-					background-color: #f0f0f0;
-					color: #333;
-					padding: 5px 8px;
-					border-radius: 5px;
-					min-width: 30px;
-					text-align: center;
-				}
-
 				.app-header {
 					flex-wrap: wrap;
 					padding: 10px;
@@ -254,11 +236,32 @@
 					justify-content: space-between;
 					gap: 0;
 				}
-				.header-right {
+				.header-menu-links {
+					display: none;
 					flex-direction: column;
 					position: absolute;
 					top: 50px;
 					left: 0;
+					width: 100%;
+					background-color: #fff;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+					padding: 10px 0;
+					align-items: center;
+					gap: 5px;
+					z-index: 99;
+				}
+				.header-menu-links a {
+					padding: 10px;
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
+				}
+				.header-right {
+					flex-direction: column;
+					position: absolute;
+					top: 50px;
+					right: 0;
 					width: 100%;
 					background-color: #fff;
 					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -268,26 +271,6 @@
 				}
 				.header-right.active {
 					display: flex;
-				}
-				.header-menu-links {
-					flex-direction: column;
-					width: 100%;
-					align-items: center;
-					gap: 5px;
-				}
-				.header-menu-links a {
-					width: 90%;
-					text-align: center;
-					box-sizing: border-box;
-					margin: 5px 0;
-				}
-				.user-info {
-					width: 100%;
-					padding: 10px 0;
-					justify-content: center;
-					margin-left: 0;
-					border-top: 1px solid #eee;
-					margin-top: 10px;
 				}
 				.hamburger {
 					display: block;
@@ -302,7 +285,7 @@
 				<span class="hamburger" id="hamburgerBtn">&#9776;</span>
 			</div>
 			<div class="header-right" id="header-right-container">
-				<div class="header-menu-links" id="header-menu">
+				<div id="header-menu" class="header-menu-links">
 					<a href="/ranking.html">Ver Ranking</a>
 					<a href="/admin.html">Painel Admin</a>
 					<a
@@ -310,16 +293,6 @@
 						style="background-color: #fc4c02; color: white"
 						>Cronômetro</a
 					>
-				</div>
-				<div id="userInfo" class="user-info" style="display: none">
-					<img
-						id="userPhoto"
-						src="https://via.placeholder.com/30"
-						alt="Foto do Usuário" />
-					<span class="user-name"><span id="userName"></span></span>
-					<button id="disconnectBtn" class="disconnect-icon">
-						<i class="fa-solid fa-power-off"></i>
-					</button>
 				</div>
 			</div>
 		</header>
@@ -370,6 +343,7 @@
 			const headerRightContainer = document.getElementById(
 				"header-right-container"
 			);
+			const headerMenu = document.getElementById("header-menu");
 			const userInfoDiv = document.getElementById("userInfo");
 
 			let isRunning = false;
@@ -381,6 +355,22 @@
 			let realTimeSyncInterval = null;
 
 			const formatTime = (ms) => {
+				let totalSeconds = Math.floor(ms / 1000);
+				let totalMinutes = Math.floor(totalSeconds / 60);
+				let totalHours = Math.floor(totalMinutes / 60);
+
+				let displayHours = String(totalHours).padStart(2, "0");
+				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
+				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
+				let displayMilliseconds = String(Math.floor((ms % 1000) / 10)).padStart(
+					2,
+					"0"
+				);
+
+				return `${displayHours}:${displayMinutes}:${displaySeconds}:${displayMilliseconds}`;
+			};
+
+			const formatTimeDisplay = (ms) => {
 				let totalSeconds = Math.floor(ms / 1000);
 				let totalMinutes = Math.floor(totalSeconds / 60);
 				let totalHours = Math.floor(totalMinutes / 60);
@@ -425,7 +415,7 @@
 
 			const updateDisplay = () => {
 				elapsedTime = Date.now() - startTime;
-				mainDisplay.innerHTML = formatTime(elapsedTime);
+				mainDisplay.innerHTML = formatTimeDisplay(elapsedTime);
 
 				laps.forEach((lap) => {
 					const lapElement = document.getElementById(`lap-${lap.id}`);
@@ -438,7 +428,6 @@
 						lapTimeElement.textContent = formatTime(currentLapTime);
 					}
 				});
-				saveState();
 			};
 
 			const startStopwatch = () => {
@@ -482,17 +471,21 @@
 							lapElement.querySelector(".lap-control-btn").disabled = true;
 						}
 					});
+
+					startBtn.disabled = false;
+					stopBtn.disabled = true;
 					saveBtn.disabled = false;
 					saveState();
 				}
 			};
 
 			const resetStopwatch = async () => {
-				stopStopwatch();
+				if (isRunning) stopStopwatch();
+
 				elapsedTime = 0;
 				lapNumber = 0;
 				laps = [];
-				mainDisplay.innerHTML = formatTime(elapsedTime);
+				mainDisplay.innerHTML = formatTimeDisplay(elapsedTime);
 				lapsList.innerHTML = "";
 				resetBtn.disabled = true;
 				lapBtn.disabled = true;
@@ -510,15 +503,12 @@
 			};
 
 			const addLap = () => {
-				if (laps.length > 0) {
-					const lastLap = laps[laps.length - 1];
-					if (!lastLap.stopTime) {
-						const lastLapBtn = document
-							.getElementById(`lap-${lastLap.id}`)
-							.querySelector(".lap-control-btn");
-						if (lastLapBtn) {
-							stopLapTimer({ currentTarget: lastLapBtn });
-						}
+				if (isRunning && laps.length > 0 && !laps[laps.length - 1].stopTime) {
+					const lastLapBtn = document
+						.getElementById(`lap-${laps.length}`)
+						.querySelector(".lap-control-btn");
+					if (lastLapBtn) {
+						stopLapTimer({ currentTarget: lastLapBtn });
 					}
 				}
 
@@ -538,7 +528,9 @@
             </div>
             <span class="lap-time">${formatTime(0)}</span>
             <div class="lap-controls">
-              <button class="lap-control-btn btn-stop-lap" data-lap-id="${lapNumber}"><i class="fa-solid fa-stop"></i></button>
+              <button class="lap-control-btn btn-stop-lap" data-lap-id="${lapNumber}" ${
+					!isRunning ? "disabled" : ""
+				}><i class="fa-solid fa-stop"></i></button>
             </div>
         `;
 
@@ -607,7 +599,7 @@
 
 					startTime = Date.now() - elapsedTime;
 
-					mainDisplay.innerHTML = formatTime(elapsedTime);
+					mainDisplay.innerHTML = formatTimeDisplay(elapsedTime);
 					lapsList.innerHTML = "";
 					laps.forEach((lap) => {
 						const lapItem = document.createElement("div");
@@ -704,19 +696,50 @@
 			saveBtn.addEventListener("click", saveStopwatchData);
 
 			loadState();
+
 			hamburgerBtn.addEventListener("click", () => {
 				headerRightContainer.classList.toggle("active");
 			});
 
+			const checkStatus = async () => {
+				try {
+					const response = await fetch("/api/strava/status");
+					const data = await response.json();
+					if (data.status === "connected") {
+						userInfoDiv.style.display = "flex";
+						loadUserInfo();
+					} else {
+						userInfoDiv.style.display = "none";
+					}
+				} catch (error) {
+					console.error("Erro ao verificar status:", error);
+				}
+			};
+
+			const loadUserInfo = async () => {
+				try {
+					const response = await fetch("/api/strava/user");
+					const user = await response.json();
+					const userNameSpan = userInfoDiv.querySelector("#userName");
+					const userPhoto = userInfoDiv.querySelector("#userPhoto");
+					if (userNameSpan) userNameSpan.textContent = user.name;
+					if (userPhoto)
+						userPhoto.src =
+							user.profile_photo || "https://via.placeholder.com/60";
+				} catch (error) {
+					console.error("Erro ao carregar informações do usuário:", error);
+				}
+			};
+
+			checkStatus();
+
 			window.addEventListener("resize", () => {
+				const headerMenuLinks = document.getElementById("header-menu");
 				if (window.innerWidth > 768) {
 					headerRightContainer.classList.remove("active");
+					headerMenuLinks.style.display = "flex";
 				}
 			});
-
-			// Inicia a verificação de status do login
-			checkStatus();
-			loadUserInfo();
 		</script>
 	</body>
 </html>

@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs").promises;
 const router = express.Router();
 const dbPath = "./db.json";
+const stopwatchDbPath = "./db.stopwatch.json";
 const adminUsername = process.env.ADMIN_USERNAME;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
@@ -14,12 +15,21 @@ const isAuthenticated = (req, res, next) => {
 	}
 };
 
-const readDb = async () => {
+const readDb = async (path) => {
 	try {
-		const data = await fs.readFile(dbPath, "utf8");
+		const data = await fs.readFile(path, "utf8");
 		const db = JSON.parse(data);
+		if (path === stopwatchDbPath) {
+			if (!db || !Array.isArray(db.stopwatchData)) {
+				return { stopwatchData: [], realTimeStopwatch: {} };
+			}
+			if (!db.realTimeStopwatch) {
+				db.realTimeStopwatch = {};
+			}
+			return db;
+		}
 		if (!db || !Array.isArray(db.users)) {
-			return { users: [], activities: [], config: {}, stopwatchData: [] };
+			return { users: [], activities: [], config: {} };
 		}
 		if (!Array.isArray(db.activities)) {
 			db.activities = [];
@@ -27,27 +37,27 @@ const readDb = async () => {
 		if (!db.config) {
 			db.config = {};
 		}
-		if (!db.stopwatchData) {
-			db.stopwatchData = [];
-		}
 		return db;
 	} catch (error) {
 		if (error.code === "ENOENT" || error instanceof SyntaxError) {
 			console.log(
-				"Arquivo db.json não encontrado ou inválido. Criando um novo."
+				`Arquivo ${path} não encontrado ou inválido. Criando um novo.`
 			);
-			return { users: [], activities: [], config: {}, stopwatchData: [] };
+			if (path === stopwatchDbPath) {
+				return { stopwatchData: [], realTimeStopwatch: {} };
+			}
+			return { users: [], activities: [], config: {} };
 		}
-		console.error("Erro ao ler db.json:", error);
+		console.error(`Erro ao ler ${path}:`, error);
 		return { users: [], activities: [] };
 	}
 };
 
-const saveDb = async (data) => {
+const saveDb = async (path, data) => {
 	try {
-		await fs.writeFile(dbPath, JSON.stringify(data, null, 2), "utf8");
+		await fs.writeFile(path, JSON.stringify(data, null, 2), "utf8");
 	} catch (error) {
-		console.error("Erro ao salvar db.json:", error);
+		console.error(`Erro ao salvar ${path}:`, error);
 	}
 };
 
@@ -78,24 +88,25 @@ router.use(isAuthenticated);
 
 router.post("/config/ranking-date", async (req, res) => {
 	const { date, considerTransition } = req.body;
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	db.config.rankingDate = date;
 	db.config.considerTransition = considerTransition;
-	await saveDb(db);
+	await saveDb(dbPath, db);
 	res.status(200).json({ message: "Configuração de data salva com sucesso." });
 });
 
 router.delete("/config/ranking-date", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	delete db.config.rankingDate;
-	await saveDb(db);
+	await saveDb(dbPath, db);
 	res.status(200).json({ message: "Filtro de data removido com sucesso." });
 });
 
 // Endpoint para buscar dados do cronômetro
 router.get("/stopwatch-data", async (req, res) => {
-	const db = await readDb();
-	const stopwatchDataWithUser = db.stopwatchData.map((data) => {
+	const db = await readDb(dbPath);
+	const stopwatchDb = await readDb(stopwatchDbPath);
+	const stopwatchDataWithUser = stopwatchDb.stopwatchData.map((data) => {
 		const user = db.users.find((u) => u.id === data.userId);
 		return {
 			...data,
@@ -107,24 +118,22 @@ router.get("/stopwatch-data", async (req, res) => {
 
 // Endpoint para excluir todos os dados do cronômetro
 router.delete("/stopwatch-data/all", async (req, res) => {
-	let db = await readDb();
+	let db = await readDb(stopwatchDbPath);
 	db.stopwatchData = [];
-	await saveDb(db);
-	res
-		.status(200)
-		.json({
-			message: "Todos os dados do cronômetro foram excluídos com sucesso.",
-		});
+	await saveDb(stopwatchDbPath, db);
+	res.status(200).json({
+		message: "Todos os dados do cronômetro foram excluídos com sucesso.",
+	});
 });
 
 router.get("/users", async (req, res) => {
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	res.json(db.users);
 });
 
 router.get("/activities", async (req, res) => {
 	const { date, limit, athleteId } = req.query;
-	const db = await readDb();
+	const db = await readDb(dbPath);
 	let filteredActivities = [...db.activities];
 
 	if (athleteId) {
@@ -160,14 +169,14 @@ router.get("/activities", async (req, res) => {
 
 router.delete("/activity/:id", async (req, res) => {
 	const activityId = req.params.id;
-	let db = await readDb();
+	let db = await readDb(dbPath);
 	const initialLength = db.activities.length;
 	db.activities = db.activities.filter(
 		(activity) => activity.id.toString() !== activityId
 	);
 
 	if (db.activities.length < initialLength) {
-		await saveDb(db);
+		await saveDb(dbPath, db);
 		res.status(200).json({ message: "Atividade excluída com sucesso." });
 	} else {
 		res.status(404).json({ message: "Atividade não encontrada." });
@@ -175,9 +184,9 @@ router.delete("/activity/:id", async (req, res) => {
 });
 
 router.delete("/activities/all", async (req, res) => {
-	let db = await readDb();
+	let db = await readDb(dbPath);
 	db.activities = [];
-	await saveDb(db);
+	await saveDb(dbPath, db);
 	res
 		.status(200)
 		.json({ message: "Todas as atividades foram excluídas com sucesso." });
@@ -186,7 +195,7 @@ router.delete("/activities/all", async (req, res) => {
 router.put("/activity/:id", async (req, res) => {
 	const activityId = req.params.id;
 	const { name, distance, moving_time } = req.body;
-	let db = await readDb();
+	let db = await readDb(dbPath);
 	const activityToUpdate = db.activities.find(
 		(activity) => activity.id.toString() === activityId
 	);
@@ -195,7 +204,7 @@ router.put("/activity/:id", async (req, res) => {
 		activityToUpdate.name = name;
 		activityToUpdate.distance = parseFloat(distance);
 		activityToUpdate.moving_time = parseInt(moving_time);
-		await saveDb(db);
+		await saveDb(dbPath, db);
 		res.status(200).json({ message: "Atividade atualizada com sucesso." });
 	} else {
 		res.status(404).json({ message: "Atividade não encontrada." });
