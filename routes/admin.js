@@ -49,7 +49,7 @@ const readDb = async (path) => {
 			return { users: [], activities: [], config: {} };
 		}
 		console.error(`Erro ao ler ${path}:`, error);
-		return { users: [], activities: [] };
+		return { users: [], activities: [], config: {} };
 	}
 };
 
@@ -121,9 +121,11 @@ router.delete("/stopwatch-data/all", async (req, res) => {
 	let db = await readDb(stopwatchDbPath);
 	db.stopwatchData = [];
 	await saveDb(stopwatchDbPath, db);
-	res.status(200).json({
-		message: "Todos os dados do cronômetro foram excluídos com sucesso.",
-	});
+	res
+		.status(200)
+		.json({
+			message: "Todos os dados do cronômetro foram excluídos com sucesso.",
+		});
 });
 
 router.get("/users", async (req, res) => {

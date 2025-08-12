@@ -66,7 +66,7 @@
 				cursor: pointer;
 			}
 			.user-info {
-				display: flex;
+				display: none;
 				align-items: center;
 				gap: 10px;
 			}
@@ -226,6 +226,49 @@
 				min-width: 50px;
 				text-align: center;
 			}
+			.login-container {
+				max-width: 400px;
+				margin: 50px auto;
+				padding: 30px;
+				background-color: #fff;
+				border-radius: 8px;
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			}
+			.login-container h2 {
+				margin-bottom: 20px;
+				color: #007bff;
+			}
+			.login-form input {
+				width: 100%;
+				padding: 12px;
+				margin-bottom: 15px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+				box-sizing: border-box;
+				font-size: 1em;
+			}
+			.login-form button {
+				width: 100%;
+				padding: 12px;
+				background-color: #007bff;
+				color: #fff;
+				border: none;
+				border-radius: 5px;
+				font-size: 1.1em;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+			}
+			.login-form button:hover {
+				background-color: #0056b3;
+			}
+			.login-feedback {
+				margin-top: 15px;
+				font-size: 0.9em;
+				font-weight: bold;
+			}
+			.login-feedback.error {
+				color: #dc3545;
+			}
 			@media (max-width: 768px) {
 				.app-header {
 					flex-wrap: wrap;
@@ -236,32 +279,11 @@
 					justify-content: space-between;
 					gap: 0;
 				}
-				.header-menu-links {
-					display: none;
-					flex-direction: column;
-					position: absolute;
-					top: 50px;
-					left: 0;
-					width: 100%;
-					background-color: #fff;
-					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-					padding: 10px 0;
-					align-items: center;
-					gap: 5px;
-					z-index: 99;
-				}
-				.header-menu-links a {
-					padding: 10px;
-					width: 90%;
-					text-align: center;
-					box-sizing: border-box;
-					margin: 5px 0;
-				}
 				.header-right {
 					flex-direction: column;
 					position: absolute;
 					top: 50px;
-					right: 0;
+					left: 0;
 					width: 100%;
 					background-color: #fff;
 					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -271,6 +293,26 @@
 				}
 				.header-right.active {
 					display: flex;
+				}
+				.header-menu-links {
+					flex-direction: column;
+					width: 100%;
+					align-items: center;
+					gap: 5px;
+				}
+				.header-menu-links a {
+					padding: 10px;
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
+				}
+				.user-info {
+					width: 100%;
+					padding: 10px 0;
+					justify-content: center;
+					border-top: 1px solid #eee;
+					margin-top: 10px;
 				}
 				.hamburger {
 					display: block;
@@ -294,37 +336,65 @@
 						>Cronômetro</a
 					>
 				</div>
+				<div id="userInfo" class="user-info">
+					<img
+						id="userPhoto"
+						src="https://via.placeholder.com/30"
+						alt="Foto do Usuário" />
+					<span class="user-name"><span id="userName">Usuário</span></span>
+				</div>
 			</div>
 		</header>
 
 		<div class="main-content">
-			<div class="container">
-				<h1>Cronômetro de Baterias</h1>
-				<div id="mainDisplay" class="display">00:00:00:00</div>
+			<div id="adminLoginContainer" class="login-container">
+				<h2>Login Administrativo</h2>
+				<p>Acesso restrito para gerenciar o cronômetro das baterias.</p>
+				<form id="adminLoginForm" class="login-form">
+					<input
+						type="text"
+						id="adminUsername"
+						placeholder="Usuário"
+						required />
+					<input
+						type="password"
+						id="adminPassword"
+						placeholder="Senha"
+						required />
+					<button type="submit">Entrar</button>
+				</form>
+				<p id="loginFeedback" class="login-feedback"></p>
+			</div>
 
-				<div class="buttons">
-					<button id="startBtn" class="btn btn-start">
-						<i class="fa-solid fa-play"></i> Iniciar
-					</button>
-					<button id="stopBtn" class="btn btn-stop" disabled>
-						<i class="fa-solid fa-pause"></i> Parar
-					</button>
-					<button id="resetBtn" class="btn btn-reset" disabled>
-						<i class="fa-solid fa-rotate-left"></i> Zerar
-					</button>
-					<button id="lapBtn" class="btn btn-lap" disabled>
-						<i class="fa-solid fa-flag-checkered"></i> Iniciar Nova Bateria
-					</button>
-				</div>
+			<div id="stopwatchContent" style="display: none">
+				<div class="container">
+					<h1>Cronômetro de Baterias</h1>
+					<div id="mainDisplay" class="display">00:00:00:00</div>
 
-				<div class="laps-container">
-					<h3>Baterias</h3>
-					<div id="lapsList"></div>
-					<div class="btn-save-container">
-						<span id="feedbackMessage" class="feedback-message"></span>
-						<button id="saveBtn" class="btn-save" disabled>
-							<i class="fa-solid fa-save"></i> Salvar Dados
+					<div class="buttons">
+						<button id="startBtn" class="btn btn-start">
+							<i class="fa-solid fa-play"></i> Iniciar
 						</button>
+						<button id="stopBtn" class="btn btn-stop" disabled>
+							<i class="fa-solid fa-pause"></i> Parar
+						</button>
+						<button id="resetBtn" class="btn btn-reset" disabled>
+							<i class="fa-solid fa-rotate-left"></i> Zerar
+						</button>
+						<button id="lapBtn" class="btn btn-lap" disabled>
+							<i class="fa-solid fa-flag-checkered"></i> Iniciar Nova Bateria
+						</button>
+					</div>
+
+					<div class="laps-container">
+						<h3>Baterias</h3>
+						<div id="lapsList"></div>
+						<div class="btn-save-container">
+							<span id="feedbackMessage" class="feedback-message"></span>
+							<button id="saveBtn" class="btn-save" disabled>
+								<i class="fa-solid fa-save"></i> Salvar Dados
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -345,6 +415,12 @@
 			);
 			const headerMenu = document.getElementById("header-menu");
 			const userInfoDiv = document.getElementById("userInfo");
+			const adminLoginContainer = document.getElementById(
+				"adminLoginContainer"
+			);
+			const adminLoginForm = document.getElementById("adminLoginForm");
+			const stopwatchContent = document.getElementById("stopwatchContent");
+			const loginFeedback = document.getElementById("loginFeedback");
 
 			let isRunning = false;
 			let startTime = 0;
@@ -358,7 +434,6 @@
 				let totalSeconds = Math.floor(ms / 1000);
 				let totalMinutes = Math.floor(totalSeconds / 60);
 				let totalHours = Math.floor(totalMinutes / 60);
-
 				let displayHours = String(totalHours).padStart(2, "0");
 				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
 				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
@@ -366,7 +441,6 @@
 					2,
 					"0"
 				);
-
 				return `${displayHours}:${displayMinutes}:${displaySeconds}:${displayMilliseconds}`;
 			};
 
@@ -374,7 +448,6 @@
 				let totalSeconds = Math.floor(ms / 1000);
 				let totalMinutes = Math.floor(totalSeconds / 60);
 				let totalHours = Math.floor(totalMinutes / 60);
-
 				let displayHours = String(totalHours).padStart(2, "0");
 				let displayMinutes = String(totalMinutes % 60).padStart(2, "0");
 				let displaySeconds = String(totalSeconds % 60).padStart(2, "0");
@@ -382,10 +455,9 @@
 					2,
 					"0"
 				);
-
 				return `
-            <span class="display-part">${displayHours}</span>:<span class="display-part">${displayMinutes}</span>:<span class="display-part">${displaySeconds}</span>:<span class="display-part">${displayMilliseconds}</span>
-        `;
+                <span class="display-part">${displayHours}</span>:<span class="display-part">${displayMinutes}</span>:<span class="display-part">${displaySeconds}</span>:<span class="display-part">${displayMilliseconds}</span>
+            `;
 			};
 
 			const formatRealTime = (date) => {
@@ -504,8 +576,9 @@
 
 			const addLap = () => {
 				if (isRunning && laps.length > 0 && !laps[laps.length - 1].stopTime) {
+					const lastLap = laps[laps.length - 1];
 					const lastLapBtn = document
-						.getElementById(`lap-${laps.length}`)
+						.getElementById(`lap-${lastLap.id}`)
 						.querySelector(".lap-control-btn");
 					if (lastLapBtn) {
 						stopLapTimer({ currentTarget: lastLapBtn });
@@ -520,19 +593,19 @@
 				lapItem.className = "lap-item";
 				lapItem.id = `lap-${lapNumber}`;
 				lapItem.innerHTML = `
-            <div class="lap-info">
-                <span class="lap-number">Bateria ${lapNumber}:</span>
-                <span class="lap-start-time">Início às: ${formatRealTime(
-									realStartTime
-								)}</span>
-            </div>
-            <span class="lap-time">${formatTime(0)}</span>
-            <div class="lap-controls">
-              <button class="lap-control-btn btn-stop-lap" data-lap-id="${lapNumber}" ${
+                <div class="lap-info">
+                    <span class="lap-number">Bateria ${lapNumber}:</span>
+                    <span class="lap-start-time">Início às: ${formatRealTime(
+											realStartTime
+										)}</span>
+                </div>
+                <span class="lap-time">${formatTime(0)}</span>
+                <div class="lap-controls">
+                  <button class="lap-control-btn btn-stop-lap" data-lap-id="${lapNumber}" ${
 					!isRunning ? "disabled" : ""
 				}><i class="fa-solid fa-stop"></i></button>
-            </div>
-        `;
+                </div>
+            `;
 
 				lapsList.appendChild(lapItem);
 
@@ -606,28 +679,28 @@
 						lapItem.className = "lap-item";
 						lapItem.id = `lap-${lap.id}`;
 						lapItem.innerHTML = `
-                    <div class="lap-info">
-                        <span class="lap-number">Bateria ${lap.id}:</span>
-                        <span class="lap-start-time">Início às: ${formatRealTime(
-													new Date(lap.realStartTime)
-												)}</span>
-                    </div>
-                    <span class="lap-time">${
-											lap.stopTime
-												? formatTime(
-														new Date(lap.stopTime).getTime() -
-															new Date(lap.realStartTime).getTime()
-												  )
-												: formatTime(elapsedTime - lap.lapStartTime)
-										}</span>
-                    <div class="lap-controls">
-                        <button class="lap-control-btn btn-stop-lap" data-lap-id="${
-													lap.id
-												}" ${lap.stopTime ? "disabled" : ""}>
-                            <i class="fa-solid fa-stop"></i>
-                        </button>
-                    </div>
-                `;
+                        <div class="lap-info">
+                            <span class="lap-number">Bateria ${lap.id}:</span>
+                            <span class="lap-start-time">Início às: ${formatRealTime(
+															new Date(lap.realStartTime)
+														)}</span>
+                        </div>
+                        <span class="lap-time">${
+													lap.stopTime
+														? formatTime(
+																new Date(lap.stopTime).getTime() -
+																	new Date(lap.realStartTime).getTime()
+														  )
+														: formatTime(elapsedTime - lap.lapStartTime)
+												}</span>
+                        <div class="lap-controls">
+                            <button class="lap-control-btn btn-stop-lap" data-lap-id="${
+															lap.id
+														}" ${lap.stopTime ? "disabled" : ""}>
+                                <i class="fa-solid fa-stop"></i>
+                            </button>
+                        </div>
+                    `;
 						lapItem
 							.querySelector(".lap-control-btn")
 							.addEventListener("click", stopLapTimer);
@@ -695,51 +768,66 @@
 			lapBtn.addEventListener("click", addLap);
 			saveBtn.addEventListener("click", saveStopwatchData);
 
-			loadState();
+			// Lógica de Login Administrativo
+			const checkAdminStatus = async () => {
+				try {
+					const response = await fetch("/api/admin/status");
+					if (response.ok) {
+						const data = await response.json();
+						if (data.status === "authenticated") {
+							adminLoginContainer.style.display = "none";
+							stopwatchContent.style.display = "block";
+							loadState(); // Carrega o estado do cronômetro após o login
+						} else {
+							adminLoginContainer.style.display = "block";
+							stopwatchContent.style.display = "none";
+						}
+					}
+				} catch (error) {
+					console.error("Erro ao verificar status de login:", error);
+				}
+			};
+
+			adminLoginForm.addEventListener("submit", async (e) => {
+				e.preventDefault();
+				const username = document.getElementById("adminUsername").value;
+				const password = document.getElementById("adminPassword").value;
+
+				try {
+					const response = await fetch("/api/admin/login", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ username, password }),
+					});
+
+					if (response.ok) {
+						loginFeedback.textContent = "Login bem-sucedido!";
+						loginFeedback.className = "login-feedback feedback-success";
+						checkAdminStatus();
+					} else {
+						const data = await response.json();
+						loginFeedback.textContent =
+							data.message || "Usuário ou senha incorretos.";
+						loginFeedback.className = "login-feedback feedback-error";
+					}
+				} catch (error) {
+					console.error("Erro de login:", error);
+					loginFeedback.textContent = "Erro ao conectar. Tente novamente.";
+					loginFeedback.className = "login-feedback feedback-error";
+				}
+			});
 
 			hamburgerBtn.addEventListener("click", () => {
 				headerRightContainer.classList.toggle("active");
 			});
 
-			const checkStatus = async () => {
-				try {
-					const response = await fetch("/api/strava/status");
-					const data = await response.json();
-					if (data.status === "connected") {
-						userInfoDiv.style.display = "flex";
-						loadUserInfo();
-					} else {
-						userInfoDiv.style.display = "none";
-					}
-				} catch (error) {
-					console.error("Erro ao verificar status:", error);
-				}
-			};
-
-			const loadUserInfo = async () => {
-				try {
-					const response = await fetch("/api/strava/user");
-					const user = await response.json();
-					const userNameSpan = userInfoDiv.querySelector("#userName");
-					const userPhoto = userInfoDiv.querySelector("#userPhoto");
-					if (userNameSpan) userNameSpan.textContent = user.name;
-					if (userPhoto)
-						userPhoto.src =
-							user.profile_photo || "https://via.placeholder.com/60";
-				} catch (error) {
-					console.error("Erro ao carregar informações do usuário:", error);
-				}
-			};
-
-			checkStatus();
-
 			window.addEventListener("resize", () => {
-				const headerMenuLinks = document.getElementById("header-menu");
 				if (window.innerWidth > 768) {
 					headerRightContainer.classList.remove("active");
-					headerMenuLinks.style.display = "flex";
 				}
 			});
+
+			checkAdminStatus();
 		</script>
 	</body>
 </html>

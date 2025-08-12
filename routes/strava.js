@@ -8,12 +8,31 @@ const stopwatchDbPath = "./db.stopwatch.json";
 
 const stravaClientId = process.env.STRAVA_CLIENT_ID;
 const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET;
-const redirectUri = "http://localhost:3000/api/strava/callback";
+const redirectUri =
+	process.env.REDIRECT_URI || "http://localhost:3000/api/strava/callback";
 
 const readDb = async (path) => {
 	try {
 		const data = await fs.readFile(path, "utf8");
 		const db = JSON.parse(data);
+		if (path === stopwatchDbPath) {
+			if (!db || !Array.isArray(db.stopwatchData)) {
+				return { stopwatchData: [], realTimeStopwatch: {} };
+			}
+			if (!db.realTimeStopwatch) {
+				db.realTimeStopwatch = {};
+			}
+			return db;
+		}
+		if (!db || !Array.isArray(db.users)) {
+			return { users: [], activities: [], config: {} };
+		}
+		if (!Array.isArray(db.activities)) {
+			db.activities = [];
+		}
+		if (!db.config) {
+			db.config = {};
+		}
 		return db;
 	} catch (error) {
 		if (error.code === "ENOENT" || error instanceof SyntaxError) {
@@ -117,7 +136,7 @@ router.get("/user", async (req, res) => {
 	if (activeUser) {
 		res.json({
 			name: activeUser.name,
-			profile_photo: activeUser.profile_medium,
+			profile_photo: activeUser.profile_photo,
 		});
 	} else {
 		res.status(404).json({ message: "Nenhum usuário ativo." });
@@ -439,12 +458,10 @@ router.get("/activities", async (req, res) => {
 			"Erro ao buscar atividades:",
 			error.response?.data || error.message
 		);
-		res
-			.status(500)
-			.json({
-				message:
-					"Erro ao buscar as atividades do atleta. O token pode ter expirado ou o escopo não foi suficiente.",
-			});
+		res.status(500).json({
+			message:
+				"Erro ao buscar as atividades do atleta. O token pode ter expirado ou o escopo não foi suficiente.",
+		});
 	}
 });
 

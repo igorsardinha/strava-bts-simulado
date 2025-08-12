@@ -1,7 +1,7 @@
 {
-	"name": "strava-app",
-	"version": "1.0.0",
-	"description": "Exemplo de backend com Node.js e Strava API",
+	"name": "strava-bts-simulado",
+	"version": "2.0.0",
+	"description": "Aplicativo para cronometragem simulado BTS",
 	"main": "server.js",
 	"scripts": {
 		"start": "node server.js"
