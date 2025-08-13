@@ -4,11 +4,90 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Painel de Administração</title>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 		<style>
 			body {
 				font-family: sans-serif;
-				margin: 20px;
+				margin: 0;
+				padding-top: 70px;
 				text-align: center;
+			}
+			#logo {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+			}
+			.app-header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				background-color: #fff;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				padding: 10px 20px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				z-index: 100;
+			}
+			.header-left {
+				display: flex;
+				align-items: center;
+			}
+			.header-right {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+			.header-menu-links {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.header-menu-links a {
+				text-decoration: none;
+				color: #333;
+				padding: 5px 10px;
+				border-radius: 5px;
+				transition: background-color 0.3s;
+			}
+			.header-menu-links a:hover {
+				background-color: #f2f2f2;
+			}
+			.hamburger {
+				display: none;
+				font-size: 1.5em;
+				cursor: pointer;
+			}
+			.user-info {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.user-info img {
+				border-radius: 50%;
+				width: 30px;
+				height: 30px;
+				border: 1px solid #ccc;
+				object-fit: cover;
+			}
+			.user-info .user-name {
+				font-size: 1em;
+				margin: 0;
+			}
+			.disconnect-icon {
+				background-color: transparent;
+				border: none;
+				color: #f44336;
+				font-size: 1.2em;
+				cursor: pointer;
+				padding: 5px;
+			}
+			.disconnect-icon:hover {
+				color: #d32f2f;
 			}
 			.container {
 				max-width: 1000px;
@@ -101,8 +180,6 @@
 				border-radius: 5px;
 				margin-top: 20px;
 			}
-
-			/* Estilos do formulário de login */
 			.login-form {
 				max-width: 400px;
 				margin: 50px auto;
@@ -123,8 +200,6 @@
 			.logout-btn {
 				background-color: #f44336;
 			}
-
-			/* Estilos do modal */
 			.modal {
 				position: fixed;
 				z-index: 1;
@@ -159,9 +234,89 @@
 			.modal-buttons .btn {
 				margin-left: 10px;
 			}
+			@media (max-width: 768px) {
+				.app-header {
+					flex-wrap: wrap;
+					padding: 10px;
+				}
+				.header-left {
+					width: 100%;
+					justify-content: space-between;
+					gap: 0;
+				}
+				.header-menu-links {
+					display: none;
+					flex-direction: column;
+					position: absolute;
+					top: 50px;
+					left: 0;
+					width: 100%;
+					background-color: #fff;
+					box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+					padding: 10px 0;
+					align-items: center;
+					gap: 5px;
+					z-index: 99;
+				}
+				.header-menu-links a {
+					padding: 10px;
+					width: 90%;
+					text-align: center;
+					box-sizing: border-box;
+					margin: 5px 0;
+				}
+				.header-right {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					gap: 10px;
+					width: 100%;
+					padding: 10px 0;
+					margin-left: 0;
+				}
+				.header-right.active {
+					display: flex;
+				}
+				.user-info {
+					width: 100%;
+					padding: 10px 0;
+					justify-content: center;
+					border-top: 1px solid #eee;
+					margin-top: 10px;
+				}
+				.hamburger {
+					display: block;
+				}
+			}
 		</style>
 	</head>
 	<body>
+		<header class="app-header">
+			<div class="header-left">
+				<img src="../assets/logo_bts.png" alt="Logo BTS" id="logo" />
+				<span class="hamburger" id="hamburgerBtn">&#9776;</span>
+			</div>
+			<div class="header-right" id="header-right-container">
+				<div id="header-menu" class="header-menu-links">
+					<a href="/ranking.html">Ver Ranking</a>
+					<a href="/admin.html" style="background-color: #fc4c02; color: white"
+						>Painel Admin</a
+					>
+					<a href="/stopwatch.html">Cronômetro</a>
+				</div>
+				<div id="userInfo" class="user-info" style="display: none">
+					<img
+						id="userPhoto"
+						src="https://via.placeholder.com/30"
+						alt="Foto do Usuário" />
+					<span class="user-name"><span id="userName"></span></span>
+					<button id="disconnectBtn" class="disconnect-icon">
+						<i class="fa-solid fa-power-off"></i>
+					</button>
+				</div>
+			</div>
+		</header>
+
 		<div class="container">
 			<h1>Painel de Administração</h1>
 			<a href="/" class="btn btn-strava">Voltar para a Página Inicial</a>
@@ -313,6 +468,12 @@
 			const deleteAllStopwatchDataBtn = document.getElementById(
 				"deleteAllStopwatchDataBtn"
 			);
+			const hamburgerBtn = document.getElementById("hamburgerBtn");
+			const headerRightContainer = document.getElementById(
+				"header-right-container"
+			);
+			const headerMenu = document.getElementById("header-menu");
+			const userInfoDiv = document.getElementById("userInfo");
 
 			const formatTime = (seconds) => {
 				if (seconds === 0) return "00:00:00";
@@ -353,6 +514,10 @@
 						fetchUsers();
 						fetchActivities();
 						fetchStopwatchData();
+
+						if (window.innerWidth <= 768) {
+							headerRightContainer.classList.add("active");
+						}
 					} else {
 						loginSection.style.display = "block";
 						adminPanel.style.display = "none";

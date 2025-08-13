@@ -6,6 +6,7 @@ node_modules/
 
 # Arquivo de banco de dados local
 db.json
+db.stopwatch.json
 
 # Logs do npm
 npm-debug.log*

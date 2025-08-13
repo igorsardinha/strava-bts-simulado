@@ -9,5 +9,8 @@
     }
   ],
   "activities": [],
-  "config": {}
+  "config": {
+    "rankingDate": "2025-08-12",
+    "considerTransition": false
+  }
 }
