@@ -1,8 +1,10 @@
 const express = require("express");
 const fs = require("fs").promises;
 const router = express.Router();
-const dbPath = "./db.json";
-const stopwatchDbPath = "./db.stopwatch.json";
+
+const dbPath = "./data/db.json";
+const stopwatchDbPath = "./data/db.stopwatch.json";
+
 const adminUsername = process.env.ADMIN_USERNAME;
 const adminPassword = process.env.ADMIN_PASSWORD;
 
@@ -121,11 +123,9 @@ router.delete("/stopwatch-data/all", async (req, res) => {
 	let db = await readDb(stopwatchDbPath);
 	db.stopwatchData = [];
 	await saveDb(stopwatchDbPath, db);
-	res
-		.status(200)
-		.json({
-			message: "Todos os dados do cronômetro foram excluídos com sucesso.",
-		});
+	res.status(200).json({
+		message: "Todos os dados do cronômetro foram excluídos com sucesso.",
+	});
 });
 
 router.get("/users", async (req, res) => {

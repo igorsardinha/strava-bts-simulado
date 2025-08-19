@@ -3,8 +3,8 @@ const axios = require("axios");
 const fs = require("fs").promises;
 
 const router = express.Router();
-const dbPath = "./db.json";
-const stopwatchDbPath = "./db.stopwatch.json";
+const dbPath = "./data/db.json";
+const stopwatchDbPath = "./data/db.stopwatch.json";
 
 const stravaClientId = process.env.STRAVA_CLIENT_ID;
 const stravaClientSecret = process.env.STRAVA_CLIENT_SECRET;
