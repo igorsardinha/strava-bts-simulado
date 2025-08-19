@@ -24,6 +24,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/strava-bts-simulado:${{ steps.get_version.outputs.VERSION }}
             ${{ secrets.DOCKERHUB_USERNAME }}/strava-bts-simulado:latest
           file: ./Dockerfile
