@@ -28,7 +28,7 @@ COPY --from=builder /app/server.js .
 # Copia as pastas de rotas e o frontend
 COPY --from=builder /app/routes ./routes
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/assets ./assets
+
 
 # Expõe a porta que a aplicação irá usar
 EXPOSE 3000
