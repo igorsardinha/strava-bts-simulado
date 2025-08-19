@@ -2,14 +2,19 @@ body {
 	font-family: sans-serif;
 	text-align: center;
 	margin: 0;
-	padding-top: 70px;
+	padding-top: 120px;
 	background-color: #f4f4f4;
 }
 #logo {
 	border-radius: 50%;
-	width: 30px;
-	height: 30px;
+	width: 50px;
+	height: 50px;
 	border: 1px solid #ccc;
+}
+.bts_title {
+	font-size: 1.5em;
+	color: #333;
+	margin-left: 50px;
 }
 .app-header {
 	position: fixed;
@@ -27,7 +32,12 @@ body {
 .header-left {
 	display: flex;
 	align-items: center;
+}
+.header-right {
+	display: flex;
+	align-items: center;
 	gap: 20px;
+	margin-right: 40px;
 }
 .header-menu-links {
 	display: flex;
@@ -44,17 +54,10 @@ body {
 .header-menu-links a:hover {
 	background-color: #f2f2f2;
 }
-.header-right {
-	display: flex;
-	align-items: center;
-	gap: 20px;
-	margin-right: 5%;
-}
 .hamburger {
 	display: none;
 	font-size: 1.5em;
 	cursor: pointer;
-	margin-right: 5%;
 }
 .user-info {
 	display: flex;
@@ -123,6 +126,7 @@ body {
 	justify-content: space-between;
 	cursor: pointer;
 	position: relative;
+	background-color: #fff;
 }
 .activity-item.inactive-activity {
 	opacity: 0.6;
@@ -159,9 +163,9 @@ body {
 	margin: 20px auto;
 }
 #liveStopwatchDisplay {
-	font-size: 2.5em;
+	font-size: 4em;
 	font-weight: bold;
-	color: #28a745;
+	color: #5b29ff;
 }
 #liveStopwatchStatus {
 	font-size: 0.9em;
@@ -180,11 +184,11 @@ body {
 	text-align: left;
 }
 .detail-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
 	padding: 8px 0;
 	border-bottom: 1px solid #eee;
+	display: flex;
+	gap: 10px;
+	align-items: center;
 }
 .detail-item:last-child {
 	border-bottom: none;
@@ -212,17 +216,16 @@ body {
 		gap: 0;
 	}
 	.header-menu-links {
-		display: none;
+		display: flex;
 		flex-direction: column;
 		position: absolute;
-		top: 50px;
 		left: 0;
 		width: 100%;
 		background-color: #fff;
 		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 		padding: 10px 0;
 		align-items: center;
-		margin-left: 0;
+		gap: 5px;
 		z-index: 99;
 	}
 	.header-menu-links a {
@@ -232,18 +235,17 @@ body {
 		box-sizing: border-box;
 		margin: 5px 0;
 	}
-	.header-menu-links.active {
-		display: flex;
-	}
 	.header-right {
-		display: none;
-		width: 100%;
 		flex-direction: column;
-		align-items: center;
-		gap: 10px;
+		position: absolute;
+		top: 50px;
+		right: 0;
 		width: 100%;
+		background-color: #fff;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		display: none;
 		padding: 10px 0;
-		margin-left: 0;
+		z-index: 99;
 	}
 	.header-right.active {
 		display: flex;
@@ -252,10 +254,12 @@ body {
 		width: 100%;
 		padding: 10px 0;
 		justify-content: center;
+		margin-left: 0;
 		border-top: 1px solid #eee;
 		margin-top: 10px;
 	}
 	.hamburger {
 		display: block;
+		margin-right: 40px;
 	}
 }
