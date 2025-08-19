@@ -1,6 +1,6 @@
 {
 	"name": "strava-bts-simulado",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "Aplicativo para cronometragem simulado BTS",
 	"main": "server.js",
 	"scripts": {
