@@ -2,11 +2,16 @@ version: "3.8"
 
 services:
   web:
-    build: .
+    # A imagem será puxada do Docker Hub, não construída localmente
+    image: igorsardinha/strava-bts-simulado:latest
+    container_name: strava-bts-simulado
     ports:
       - "3000:3000"
     volumes:
+      # Mantém os arquivos de banco de dados e o .env persistidos
       - .:/app
+    env_file:
+      - .env
     environment:
       - STRAVA_CLIENT_ID=${STRAVA_CLIENT_ID}
       - STRAVA_CLIENT_SECRET=${STRAVA_CLIENT_SECRET}

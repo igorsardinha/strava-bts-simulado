@@ -9,7 +9,6 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala as dependências, incluindo as de desenvolvimento
-# A flag --production aqui não é usada, pois precisamos das devDependencies para o build
 RUN npm install
 
 # Copia o restante dos arquivos do projeto
@@ -26,11 +25,12 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json .
 
-# Copia o código da sua aplicação
-COPY --from=builder /app/server.js .
+# Copia as pastas de rotas e o frontend
 COPY --from=builder /app/routes ./routes
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/assets ./assets
+
+# CORRIGIDO: Copia a pasta de assets diretamente do diretório local
+COPY ./assets ./assets
 
 # Expõe a porta que a aplicação irá usar
 EXPOSE 3000
