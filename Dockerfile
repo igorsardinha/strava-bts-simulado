@@ -1,20 +1,36 @@
-# Usa uma imagem oficial do Node.js como base
-FROM node:18-alpine
+# -----------------------------
+# Etapa 1 - Build
+# -----------------------------
+FROM node:20-alpine AS builder
 
-# Define o diretório de trabalho dentro do container
+# Define diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos package.json e package-lock.json para o diretório de trabalho
+# Copia apenas arquivos essenciais para instalar dependências
 COPY package*.json ./
 
-# Instala as dependências do projeto
-RUN npm install
+# Instala dependências em modo produção
+RUN npm ci --only=production
 
-# Copia todo o restante do código da aplicação para o diretório de trabalho
+# -----------------------------
+# Etapa 2 - Runtime
+# -----------------------------
+FROM node:20-alpine
+
+# Diretório da aplicação
+WORKDIR /app
+
+# Copia dependências já instaladas da etapa anterior
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copia o restante dos arquivos
 COPY . .
 
-# Expõe a porta em que a aplicação será executada
+# Porta exposta pela aplicação
 EXPOSE 3000
 
+# Variável de ambiente (ajuste conforme necessário)
+ENV NODE_ENV=production
+
 # Comando para iniciar a aplicação
-CMD [ "npm", "start" ]
+CMD ["node", "server.js"]
