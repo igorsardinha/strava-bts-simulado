@@ -1,36 +1,40 @@
-# -----------------------------
-# Etapa 1 - Build
-# -----------------------------
-FROM node:20-alpine AS builder
+# --- Etapa de Build ---
+# Usa uma imagem do Node.js para instalar as dependências
+FROM node:18 AS builder
 
-# Define diretório de trabalho
+# Define o diretório de trabalho
 WORKDIR /app
 
-# Copia apenas arquivos essenciais para instalar dependências
-COPY package*.json ./
-
-# Instala dependências em modo produção
-RUN npm ci --only=production
-
-# -----------------------------
-# Etapa 2 - Runtime
-# -----------------------------
-FROM node:20-alpine
-
-# Diretório da aplicação
-WORKDIR /app
-
-# Copia dependências já instaladas da etapa anterior
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copia o restante dos arquivos
+# Copia todos os arquivos do projeto para o contêiner
 COPY . .
 
-# Porta exposta pela aplicação
+# Instala as dependências
+RUN npm install
+
+# --- Etapa de Produção ---
+# Usa uma imagem mais leve do Node.js para a imagem final
+FROM node:18-alpine
+
+# Define o diretório de trabalho
+WORKDIR /app
+
+# Copia as dependências e arquivos de configuração da etapa de build
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json .
+COPY --from=builder /app/package-lock.json .
+COPY --from=builder /app/server.js .
+
+
+# Copia as pastas de rotas e o frontend
+COPY --from=builder /app/routes ./routes
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/assets ./assets
+
+# Expõe a porta que a aplicação irá usar
 EXPOSE 3000
 
-# Variável de ambiente (ajuste conforme necessário)
-ENV NODE_ENV=production
+# Executa o aplicativo como um usuário não-root por segurança
+USER node
 
-# Comando para iniciar a aplicação
-CMD ["node", "server.js"]
+# Define o comando para iniciar a aplicação
+CMD ["npm", "start"]
