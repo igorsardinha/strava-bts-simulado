@@ -29,9 +29,6 @@ COPY --from=builder /app/package.json .
 COPY --from=builder /app/routes ./routes
 COPY --from=builder /app/public ./public
 
-# CORRIGIDO: Copia a pasta de assets diretamente do diretório local
-COPY ../assets ./assets
-
 # Expõe a porta que a aplicação irá usar
 EXPOSE 3000
 
