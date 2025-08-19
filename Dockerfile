@@ -5,10 +5,11 @@ FROM node:18 AS builder
 # Define o diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependência
-COPY package*.json ./
+# CORRIGIDO: Copia os arquivos de dependência de forma explícita
+COPY package.json package.json
+COPY package-lock.json package-lock.json
 
-# Instala as dependências, incluindo as de desenvolvimento
+# Instala as dependências
 RUN npm install
 
 # Copia o restante dos arquivos do projeto
@@ -21,13 +22,15 @@ FROM node:18-alpine
 # Define o diretório de trabalho
 WORKDIR /app
 
-# Copia as dependências da etapa de build, mas apenas as de produção
+# Copia as dependências e arquivos de configuração da etapa de build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json .
+COPY --from=builder /app/package-lock.json .
 
 # Copia as pastas de rotas e o frontend
 COPY --from=builder /app/routes ./routes
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/assets ./assets
 
 # Expõe a porta que a aplicação irá usar
 EXPOSE 3000
