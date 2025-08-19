@@ -1,0 +1,8 @@
+node_modules
+.env
+db.json
+db.stopwatch.json
+Dockerfile
+.git
+.gitignore
+npm-debug.log*
